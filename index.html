@@ -273,9 +273,22 @@
         const canvas = document.createElement('canvas');
         canvas.width = 128; canvas.height = 128;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = (id === GameState.darkHorseId) ? '#dc2626' : '#ffffff';
+        
+        // Check if this is my betting horse
+        const isMyHorse = GameState.bettings[0].includes(id);
+        const isDarkHorse = id === GameState.darkHorseId;
+        
+        // Background color: My horse = Sky blue, Dark Horse = Red, Others = White
+        if (isMyHorse) {
+            ctx.fillStyle = '#38bdf8'; // Sky blue (Tailwind sky-400)
+        } else if (isDarkHorse) {
+            ctx.fillStyle = '#dc2626'; // Red
+        } else {
+            ctx.fillStyle = '#ffffff'; // White
+        }
+        
         ctx.beginPath(); ctx.arc(64, 64, 60, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = (id === GameState.darkHorseId) ? 'white' : 'black';
+        ctx.fillStyle = (isMyHorse || isDarkHorse) ? 'white' : 'black';
         ctx.font = 'bold 80px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(id, 64, 64);
 
