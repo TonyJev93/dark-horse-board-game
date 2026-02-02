@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Horse 3D - Green Meadow Track</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #2d5a27; font-family: 'Pretendard', sans-serif; }
+        canvas { display: block; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .card:not(.disabled):hover { transform: translateY(-15px) scale(1.05); z-index: 50; }
+        .card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #message-box {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; opacity: 0; transition: opacity 0.4s; z-index: 100;
+        }
+        .turn-indicator { transition: all 0.5s ease; border: 2px solid transparent; }
+        .active-turn { box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); border-color: #3b82f6 !important; background: rgba(30, 58, 138, 0.4) !important; }
+
+        /* 내가 가진 말 강조 스타일 */
+        .my-horse-rank {
+            background: rgba(220, 38, 38, 0.6) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+
+        #result-screen {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 1s ease; z-index: 200;
+            backdrop-filter: blur(15px);
+        }
+        .show-result { opacity: 1 !important; pointer-events: auto !important; }
+    </style>
+</head>
+<body>
+
+<div id="ui-layer">
+    <div class="flex justify-between p-4 items-start">
+        <div class="space-y-4">
+            <!-- Player Status -->
+            <div id="player-status" class="text-white bg-black/60 p-4 rounded-2xl backdrop-blur-md border border-white/10 w-72 turn-indicator active-turn shadow-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <h1 class="text-lg font-bold">👤 Player (나)</h1>
+                    <span id="player-card-count" class="text-[10px] bg-blue-500 px-2 py-0.5 rounded-full font-bold">카드 7장</span>
+                </div>
+                <div class="flex gap-2 mb-2" id="player-assigned-horses">
+                    <!-- 내 할당 말 아이콘 표시 -->
+                </div>
+                <p id="game-status" class="text-xs text-blue-400 font-medium">당신의 차례입니다.</p>
+            </div>
+
+            <!-- AI Status & Assignments -->
+            <div class="flex gap-2">
+                <div id="ai-1" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 1</div>
+                    <div id="ai-1-horses" class="flex justify-center gap-1 mb-1"></div>
+                    <div class="text-[10px] font-bold text-blue-300" id="ai-1-cards">7장</div>
+                </div>
+                <div id="ai-2" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 2</div>
+                    <div id="ai-2-horses" class="flex justify-center gap-1 mb-1"></div>
+                    <div class="text-[10px] font-bold text-blue-300" id="ai-2-cards">7장</div>
+                </div>
+                <div id="ai-3" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 3</div>
+                    <div id="ai-3-horses" class="flex justify-center gap-1 mb-1"></div>
+                    <div class="text-[10px] font-bold text-blue-300" id="ai-3-cards">7장</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-2">
+            <div class="bg-red-900/40 p-3 rounded-xl border border-red-500/20 backdrop-blur-md flex flex-col items-end shadow-lg">
+                <h2 class="text-[9px] font-black uppercase text-red-400 mb-1">DH Tokens</h2>
+                <div id="dark-horse-tokens" class="flex gap-1"></div>
+                <button id="btn-get-token" class="pointer-events-auto mt-2 bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold py-1.5 px-4 rounded-full transition-all hidden shadow-lg">
+                    토큰 가져오기 (턴 소모)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box" class="bg-white/95 text-black px-10 py-5 rounded-2xl font-black text-3xl shadow-2xl backdrop-blur-md border border-gray-200 text-center">
+        MESSAGE
+    </div>
+
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 pointer-events-auto w-full max-w-5xl">
+        <div id="card-area" class="flex gap-3 px-10 overflow-x-auto pb-6 no-scrollbar"></div>
+    </div>
+
+    <!-- Ranking Panel -->
+    <div class="absolute top-4 right-4 p-4 bg-black/70 text-white rounded-3xl w-64 backdrop-blur-xl border border-white/10 shadow-2xl">
+        <div class="flex justify-between items-center mb-4 px-1">
+            <h2 class="font-black text-xs tracking-widest opacity-70 italic uppercase">Ranking</h2>
+            <div id="dark-horse-info" class="text-[9px] bg-red-600 px-2 py-0.5 rounded-md font-black">DH: #?</div>
+        </div>
+        <div id="rankings" class="space-y-2"></div>
+    </div>
+
+    <div id="result-screen">
+        <h1 class="text-6xl font-black text-white mb-2 italic tracking-tighter">FINAL RESULT</h1>
+        <p class="text-blue-400 font-bold mb-10 tracking-[0.3em]">경주가 종료되었습니다!</p>
+        <div id="score-board" class="w-full max-w-2xl space-y-3 mb-12"></div>
+        <button onclick="location.reload()" class="pointer-events-auto bg-white text-black font-black px-12 py-4 rounded-full hover:bg-blue-500 hover:text-white transition-all transform hover:scale-110 shadow-2xl">
+            새로운 경주 시작하기
+        </button>
+    </div>
+</div>
+
+<script>
+    const GameState = {
+        turn: 0,
+        playerCount: 4,
+        horseIds: [1, 2, 3, 4, 5, 6, 7],
+        horseOrder: [],
+        darkHorseId: null,
+        hands: [[], [], [], []],
+        bettings: [[], [], [], []],
+        tokensAvailable: 3,
+        tokens: [0, 0, 0, 0],
+        isAnimating: false,
+        isGameOver: false,
+        rankPoints: [0, 1, 2, 3, 5, 7, 10]
+    };
+
+    let scene, camera, renderer, horses = {};
+    const horseColors = {
+        1: 0xff4d4d, 2: 0x4dff88, 3: 0x4d88ff,
+        4: 0xffeb3b, 5: 0xff4dff, 6: 0x00bcd4, 7: 0xff9800
+    };
+
+    function init() {
+        setupGameData();
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x507d2a);
+        scene.fog = new THREE.Fog(0x507d2a, 30, 150);
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(35, 25, 40);
+        camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+        sunLight.position.set(20, 50, 20);
+        sunLight.castShadow = true;
+        sunLight.shadow.camera.left = -60;
+        sunLight.shadow.camera.right = 60;
+        sunLight.shadow.camera.top = 60;
+        sunLight.shadow.camera.bottom = -60;
+        scene.add(sunLight);
+
+        // Ground
+        const meadowGeo = new THREE.PlaneGeometry(1000, 1000);
+        const meadowMat = new THREE.MeshStandardMaterial({ color: 0x416e23 });
+        const meadow = new THREE.Mesh(meadowGeo, meadowMat);
+        meadow.rotation.x = -Math.PI / 2;
+        meadow.receiveShadow = true;
+        scene.add(meadow);
+
+        // Track
+        const trackWidth = 40;
+        const trackLength = 200;
+        const trackGeo = new THREE.PlaneGeometry(trackWidth, trackLength);
+        const trackMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 });
+        const track = new THREE.Mesh(trackGeo, trackMat);
+        track.rotation.x = -Math.PI / 2;
+        track.position.y = 0.02;
+        track.receiveShadow = true;
+        scene.add(track);
+
+        // Lanes & Numbers
+        const laneCount = 7;
+        const laneWidth = trackWidth / laneCount;
+        for(let i = 0; i <= laneCount; i++) {
+            const lineGeo = new THREE.PlaneGeometry(0.2, trackLength);
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const line = new THREE.Mesh(lineGeo, lineMat);
+            line.rotation.x = -Math.PI / 2;
+            line.position.set(-trackWidth/2 + (i * laneWidth), 0.03, 0);
+            scene.add(line);
+
+            if (i < laneCount) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128; canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = 'bold 80px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, 64, 64);
+
+                const tex = new THREE.CanvasTexture(canvas);
+                const numMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.8 });
+                const numGeo = new THREE.PlaneGeometry(2.5, 2.5);
+                const numMesh = new THREE.Mesh(numGeo, numMat);
+                numMesh.rotation.x = -Math.PI / 2;
+                numMesh.position.set(-trackWidth/2 + (i * laneWidth) + (laneWidth/2), 0.04, 30);
+                scene.add(numMesh);
+            }
+        }
+
+        createHorses();
+        renderUI();
+
+        document.getElementById('btn-get-token').onclick = takeDarkHorseToken;
+        animate();
+
+        // Interaction
+        let isMouseDown = false;
+        let prevMouseX = 0;
+        document.addEventListener('mousedown', (e) => { if(e.target.tagName === 'CANVAS') isMouseDown = true; prevMouseX = e.clientX; });
+        document.addEventListener('mouseup', () => isMouseDown = false);
+        document.addEventListener('mousemove', (e) => {
+            if(isMouseDown) {
+                const deltaX = e.clientX - prevMouseX;
+                camera.position.x += deltaX * 0.08;
+                camera.lookAt(0, 0, 0);
+                prevMouseX = e.clientX;
+            }
+        });
+    }
+
+    function createHorseModel(color, id) {
+        const group = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 2.5), mat);
+        body.position.y = 1.5;
+        body.castShadow = true;
+        group.add(body);
+
+        const neck = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.8, 0.8), mat);
+        neck.position.set(0, 2.4, -1.2);
+        neck.rotation.x = -0.4;
+        neck.castShadow = true;
+        group.add(neck);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.8, 1.2), mat);
+        head.position.set(0, 3.2, -1.8);
+        head.castShadow = true;
+        group.add(head);
+
+        const tail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), blackMat);
+        tail.position.set(0, 1.5, 1.4);
+        tail.rotation.x = 0.5;
+        group.add(tail);
+
+        const legGeo = new THREE.BoxGeometry(0.4, 1.5, 0.4);
+        const legs = [];
+        const legPos = [{x: 0.4, z: 0.8}, {x: -0.4, z: 0.8}, {x: 0.4, z: -0.8}, {x: -0.4, z: -0.8}];
+        legPos.forEach((pos) => {
+            const leg = new THREE.Mesh(legGeo, mat);
+            leg.position.set(pos.x, 0.75, pos.z);
+            leg.castShadow = true;
+            group.add(leg);
+            legs.push(leg);
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 128; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = (id === GameState.darkHorseId) ? '#dc2626' : '#ffffff';
+        ctx.beginPath(); ctx.arc(64, 64, 60, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = (id === GameState.darkHorseId) ? 'white' : 'black';
+        ctx.font = 'bold 80px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(id, 64, 64);
+
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
+        sprite.position.y = 4.5;
+        sprite.scale.set(1.5, 1.5, 1);
+        group.add(sprite);
+
+        group.userData = { legs, id };
+        return group;
+    }
+
+    function createHorses() {
+        GameState.horseIds.forEach((id) => {
+            const horse = createHorseModel(horseColors[id], id);
+            horses[id] = horse;
+            scene.add(horse);
+        });
+        updateHorsePositions(true);
+    }
+
+    function setupGameData() {
+        GameState.horseOrder = [...GameState.horseIds].sort(() => Math.random() - 0.5);
+        GameState.darkHorseId = GameState.horseOrder[0];
+
+        // Allocate betting horses (2 per player)
+        for(let i=0; i<4; i++) {
+            GameState.bettings[i] = [...GameState.horseIds].sort(() => Math.random() - 0.5).slice(0, 2);
+        }
+
+        const types = ['forward', 'backward', 'swap', 'last_to_front'];
+        const allActionCards = [];
+        for(let i = 0; i < 40; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+            let value = (type === 'forward' || type === 'backward') ? Math.floor(Math.random() * 2) + 1 : null;
+            let target = (Math.random() > 0.4) ? GameState.horseIds[Math.floor(Math.random() * 7)] : null;
+            allActionCards.push({ id: i, type, value, target });
+        }
+
+        for(let i = 0; i < 4; i++) {
+            GameState.hands[i] = allActionCards.splice(0, 7);
+        }
+    }
+
+    function updateHorsePositions(immediate = false) {
+        GameState.horseOrder.forEach((id, rank) => {
+            const targetZ = 25 - (rank * 8);
+            const targetX = -20 + (id - 0.5) * (40/7);
+            if (immediate) horses[id].position.set(targetX, 0, targetZ);
+            else horses[id].userData.targetPos = new THREE.Vector3(targetX, 0, targetZ);
+        });
+    }
+
+    function showMessage(text, isPlayer = true) {
+        const box = document.getElementById('message-box');
+        box.innerText = text;
+        box.style.opacity = '1';
+        box.style.color = isPlayer ? '#3b82f6' : '#ef4444';
+        setTimeout(() => { box.style.opacity = '0'; }, 1000);
+    }
+
+    function takeDarkHorseToken() {
+        if (GameState.turn !== 0 || GameState.tokensAvailable <= 0 || GameState.isAnimating) return;
+        GameState.tokens[0]++;
+        GameState.tokensAvailable--;
+        showMessage("다크호스 토큰 획득!", true);
+        endTurn();
+    }
+
+    async function playCard(playerIdx, cardId) {
+        if (GameState.isAnimating || GameState.turn !== playerIdx) return;
+        const hand = GameState.hands[playerIdx];
+        const cardIdx = hand.findIndex(c => c.id === cardId);
+        const card = hand[cardIdx];
+        GameState.isAnimating = true;
+        processMove(card, playerIdx === 0);
+        hand.splice(cardIdx, 1);
+        renderUI();
+        setTimeout(() => { GameState.isAnimating = false; endTurn(); }, 1000);
+    }
+
+    function processMove(card, isPlayer) {
+        let horseId = card.target || GameState.horseOrder[Math.floor(Math.random() * 7)];
+        let currentRank = GameState.horseOrder.indexOf(horseId);
+        let name = isPlayer ? "나" : `AI ${GameState.turn}`;
+
+        if (card.type === 'last_to_front') {
+            const dh = GameState.horseOrder.splice(0, 1)[0];
+            GameState.horseOrder.push(dh);
+            showMessage(`${name}: 꼴찌 #${dh} 전력 질주!`, isPlayer);
+        } else if (card.type === 'forward') {
+            const newRank = Math.min(6, currentRank + (card.value || 1));
+            GameState.horseOrder.splice(currentRank, 1);
+            GameState.horseOrder.splice(newRank, 0, horseId);
+            showMessage(`${name}: #${horseId} 가속!`, isPlayer);
+        } else if (card.type === 'backward') {
+            const newRank = Math.max(0, currentRank - (card.value || 1));
+            GameState.horseOrder.splice(currentRank, 1);
+            GameState.horseOrder.splice(newRank, 0, horseId);
+            showMessage(`${name}: #${horseId} 주춤...`, isPlayer);
+        } else if (card.type === 'swap') {
+            const idx = Math.min(5, Math.max(0, currentRank));
+            [GameState.horseOrder[idx], GameState.horseOrder[idx+1]] = [GameState.horseOrder[idx+1], GameState.horseOrder[idx]];
+            showMessage(`${name}: 순위 탈환!`, isPlayer);
+        }
+        updateHorsePositions();
+    }
+
+    function endTurn() {
+        if (GameState.isGameOver) return;
+        const totalRemaining = GameState.hands.reduce((sum, h) => sum + h.length, 0);
+        if (totalRemaining === 0) { finishGame(); return; }
+
+        let nextTurn = (GameState.turn + 1) % 4;
+        let safetyCounter = 0;
+        while (GameState.hands[nextTurn].length === 0 && (GameState.tokensAvailable <= 0 || nextTurn === 0)) {
+            nextTurn = (nextTurn + 1) % 4;
+            if(++safetyCounter > 4) { finishGame(); return; }
+        }
+        GameState.turn = nextTurn;
+        renderUI();
+        if (GameState.turn !== 0) setTimeout(aiTurn, 1000);
+    }
+
+    function aiTurn() {
+        if (GameState.isGameOver) return;
+        const aiIdx = GameState.turn;
+        const hand = GameState.hands[aiIdx];
+        if (GameState.tokensAvailable > 0 && Math.random() < 0.2) {
+            GameState.tokens[aiIdx]++; GameState.tokensAvailable--;
+            showMessage(`AI ${aiIdx}: 토큰 선점!`, false);
+            endTurn();
+        } else if (hand.length > 0) {
+            playCard(aiIdx, hand[Math.floor(Math.random() * hand.length)].id);
+        } else endTurn();
+    }
+
+    function finishGame() {
+        if (GameState.isGameOver) return;
+        GameState.isGameOver = true;
+        renderUI();
+        const winnerId = GameState.horseOrder[6];
+        const winnerHorse = horses[winnerId];
+        const targetCamPos = new THREE.Vector3(winnerHorse.position.x + 5, 8, winnerHorse.position.z + 12);
+        let frame = 0;
+        const animateCam = () => {
+            if(frame < 120) {
+                camera.position.lerp(targetCamPos, 0.05);
+                camera.lookAt(winnerHorse.position);
+                frame++; requestAnimationFrame(animateCam);
+            } else showResultModal();
+        };
+        animateCam();
+    }
+
+    function showResultModal() {
+        const modal = document.getElementById('result-screen');
+        const board = document.getElementById('score-board');
+        board.innerHTML = '';
+        const results = [];
+        const dhInTop3 = GameState.horseOrder.slice(4).includes(GameState.darkHorseId);
+
+        for(let i=0; i<4; i++) {
+            let score = 0;
+            let bettingInfo = "";
+            GameState.bettings[i].forEach(id => {
+                const rankIdx = GameState.horseOrder.indexOf(id);
+                const pts = GameState.rankPoints[rankIdx];
+                score += pts;
+                bettingInfo += ` #${id}(${pts}점)`;
+            });
+            const tokenCount = GameState.tokens[i];
+            const tokenBonus = dhInTop3 ? (tokenCount * 5) : (tokenCount * -3);
+            score += tokenBonus;
+            results.push({ name: i === 0 ? "Player (나)" : `AI 플레이어 ${i}`, score, tokenBonus, bettingInfo, isPlayer: i === 0 });
+        }
+
+        results.sort((a, b) => b.score - a.score);
+        results.forEach((res, idx) => {
+            const row = document.createElement('div');
+            row.className = `flex justify-between items-center p-6 rounded-3xl border ${res.isPlayer ? 'bg-blue-600 border-white/50 scale-105 shadow-2xl' : 'bg-white/5 border-white/10 text-white'}`;
+            row.innerHTML = `<div class="flex items-center gap-6"><span class="text-3xl font-black italic opacity-30">#${idx + 1}</span><div><div class="font-bold text-xl">${res.name}</div><div class="text-xs opacity-60 italic">Bet:${res.bettingInfo} | Token:${res.tokenBonus}</div></div></div><div class="text-4xl font-black">${res.score} <span class="text-sm opacity-50">PTS</span></div>`;
+            board.appendChild(row);
+        });
+        modal.classList.add('show-result');
+    }
+
+    function renderUI() {
+        const playerAssigned = document.getElementById('player-assigned-horses');
+        playerAssigned.innerHTML = '';
+        GameState.bettings[0].forEach(id => {
+            const box = document.createElement('div');
+            box.className = "w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs border border-white/20 shadow-lg";
+            box.style.backgroundColor = `#${horseColors[id].toString(16).padStart(6, '0')}`;
+            box.innerText = id;
+            playerAssigned.appendChild(box);
+        });
+
+        for(let i=1; i<=3; i++) {
+            const aiHorses = document.getElementById(`ai-${i}-horses`);
+            aiHorses.innerHTML = '';
+            GameState.bettings[i].forEach(id => {
+                const dot = document.createElement('div');
+                dot.className = "w-4 h-4 rounded-md border border-white/10 flex items-center justify-center text-[8px] font-bold";
+                dot.style.backgroundColor = `#${horseColors[id].toString(16).padStart(6, '0')}`;
+                dot.innerText = id;
+                aiHorses.appendChild(dot);
+            });
+            document.getElementById(`ai-${i}-cards`).innerText = `${GameState.hands[i].length}장`;
+        }
+
+        const rankContainer = document.getElementById('rankings');
+        rankContainer.innerHTML = '';
+        [...GameState.horseOrder].reverse().forEach((id, idx) => {
+            const isDark = id === GameState.darkHorseId;
+            const isMyHorse = GameState.bettings[0].includes(id);
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center p-3.5 rounded-2xl border transition-all duration-700 ${isMyHorse ? 'my-horse-rank' : (isDark ? 'border-red-500/50 bg-red-500/10' : 'bg-black/40 border-white/5 text-white')}`;
+            div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="font-black ${isMyHorse ? 'text-white' : 'text-blue-400'} text-xs">${idx + 1}</span>
+                        <span class="font-bold text-sm">HORSE #${id} ${isMyHorse ? '<span class="ml-1 text-[8px] bg-white text-red-600 px-1 rounded-sm">MY</span>' : ''}</span>
+                    </div>
+                    <div class="w-6 h-6 rounded-lg border border-white/20" style="background-color: #${horseColors[id].toString(16).padStart(6, '0')}"></div>
+                `;
+            rankContainer.appendChild(div);
+        });
+
+        const tokenContainer = document.getElementById('dark-horse-tokens');
+        tokenContainer.innerHTML = '';
+        for(let i=0; i<GameState.tokens[0]; i++) {
+            const t = document.createElement('div');
+            t.className = "w-5 h-5 bg-red-600 rounded-full border-2 border-white shadow-lg animate-bounce";
+            tokenContainer.appendChild(t);
+        }
+
+        document.querySelectorAll('.turn-indicator').forEach(el => el.classList.remove('active-turn'));
+        if (!GameState.isGameOver) {
+            if (GameState.turn === 0) document.getElementById('player-status').classList.add('active-turn');
+            else if (document.getElementById(`ai-${GameState.turn}`)) document.getElementById(`ai-${GameState.turn}`).classList.add('active-turn');
+        }
+
+        const cardArea = document.getElementById('card-area');
+        cardArea.innerHTML = '';
+        GameState.hands[0].forEach((card) => {
+            const isDisabled = GameState.turn !== 0 || GameState.isAnimating || GameState.isGameOver;
+            const el = document.createElement('div');
+            el.className = `card min-w-[140px] h-48 bg-white rounded-3xl shadow-2xl p-5 flex flex-col items-center justify-between text-black pointer-events-auto shrink-0 border-b-8 border-gray-200 ${isDisabled ? 'disabled' : ''}`;
+            let icon = card.type === 'forward' ? '▲' : (card.type === 'backward' ? '▼' : (card.type === 'swap' ? '🔄' : '🏇'));
+            let color = card.type === 'forward' ? 'text-blue-600' : (card.type === 'backward' ? 'text-red-600' : 'text-purple-600');
+            el.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${card.type}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${card.target ? `말 #${card.target}` : '전략적 선택'}</div>`;
+            if (!isDisabled) el.onclick = () => playCard(0, card.id);
+            cardArea.appendChild(el);
+        });
+
+        document.getElementById('btn-get-token').classList.toggle('hidden', GameState.turn !== 0 || GameState.tokensAvailable <= 0 || GameState.isGameOver);
+        document.getElementById('player-card-count').innerText = `카드 ${GameState.hands[0].length}장`;
+        document.getElementById('dark-horse-info').innerText = `DH: #${GameState.darkHorseId}`;
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const time = Date.now() * 0.005;
+
+        GameState.horseIds.forEach(id => {
+            const horse = horses[id];
+            const { legs, targetPos } = horse.userData;
+
+            if (targetPos) {
+                horse.position.lerp(targetPos, 0.05);
+                const distZ = Math.abs(horse.position.z - targetPos.z);
+
+                if (distZ > 0.1) {
+                    horse.position.y = Math.abs(Math.sin(time * 2.5)) * 0.8;
+                    horse.rotation.x = Math.sin(time * 2.5) * 0.1;
+                    legs[0].rotation.x = Math.sin(time * 3.5) * 0.6;
+                    legs[1].rotation.x = Math.sin(time * 3.5) * 0.6;
+                    legs[2].rotation.x = Math.cos(time * 3.5) * 0.6;
+                    legs[3].rotation.x = Math.cos(time * 3.5) * 0.6;
+                } else {
+                    horse.position.y = THREE.MathUtils.lerp(horse.position.y, 0, 0.1);
+                    horse.rotation.x = THREE.MathUtils.lerp(horse.rotation.x, 0, 0.1);
+                    legs.forEach(l => l.rotation.x = THREE.MathUtils.lerp(l.rotation.x, 0, 0.1));
+                }
+            }
+        });
+        renderer.render(scene, camera);
+    }
+
+    window.onload = init;
+    window.onresize = () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+</script>
+</body>
+</html>
