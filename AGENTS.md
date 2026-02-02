@@ -10,6 +10,7 @@
 6. [Safety and Security](#safety-and-security)
 7. [Documentation Standards](#documentation-standards)
 8. [Git and Version Control](#git-and-version-control)
+9. [Game Rules Reference](#game-rules-reference)
 
 ---
 
@@ -172,4 +173,52 @@ query-docs(/anomalyco/opencode, "your query here")
 
 ---
 
-*Last updated: 2026-01-31*
+## Game Rules Reference
+
+```xml
+<critical>
+  <rule priority="high">ALWAYS read and understand game rules BEFORE any game-related work</rule>
+  <rule priority="high">Reference both GAME_RULES.md and QUICK_REFERENCE.md for every game rule task</rule>
+  <rule priority="high">Verify game mechanics implementation against official rules</rule>
+</critical>
+```
+
+### Required Reading for Game-Related Tasks
+
+When working on any task related to game rules, mechanics, scoring, or gameplay:
+
+**MUST READ (in order):**
+1. `docs/QUICK_REFERENCE.md` - Quick overview of game mechanics
+2. `docs/GAME_RULES.md` - Complete official rules
+
+### Game Rule Categories
+
+| Category | Reference Location |
+|----------|-------------------|
+| **Game Setup** | GAME_RULES.md §4 (Preparation) |
+| **Turn Sequence** | GAME_RULES.md §5 (Gameplay) |
+| **Movement Rules** | GAME_RULES.md §5 (Action Card Types) |
+| **Scoring** | GAME_RULES.md §6 (Game End) |
+| **Quick Lookup** | QUICK_REFERENCE.md (all sections) |
+
+### When to Reference
+
+- Implementing game logic or state management
+- Validating user actions or moves
+- Calculating scores or rankings
+- Explaining game mechanics to users
+- Debugging game rule violations
+- Adding new game features
+
+### Verification Checklist
+
+Before completing any game-related task:
+- [ ] Rules referenced from official documentation
+- [ ] Edge cases handled per official rules
+- [ ] Movement mechanics match specification
+- [ ] Scoring logic follows exact formulas
+- [ ] Dark Horse token rules correctly implemented
+
+---
+
+*Last updated: 2026-02-03*
