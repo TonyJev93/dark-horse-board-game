@@ -1,6 +1,18 @@
 import { HORSE_COLORS } from '../core/GameConfig.js';
 
+/**
+ * Factory for creating 3D horse models using Three.js
+ *
+ * @class HorseModel
+ */
 export class HorseModel {
+    /**
+     * Create a 3D horse model
+     * @param {number} id - Horse ID (1-7)
+     * @param {boolean} isMyHorse - Is this the player's assigned horse
+     * @param {boolean} isDarkHorse - Is this the dark horse
+     * @returns {THREE.Group} Horse mesh group
+     */
     static createHorse(id, isMyHorse, isDarkHorse) {
         const group = new THREE.Group();
         const color = HORSE_COLORS[id];

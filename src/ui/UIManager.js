@@ -1,6 +1,17 @@
 import { HORSE_COLORS } from '../core/GameConfig.js';
 
+/**
+ * Manages all UI rendering and user interactions
+ * Listens to game events and updates DOM elements
+ *
+ * @class UIManager
+ */
 export class UIManager {
+    /**
+     * Initialize UI manager with dependencies
+     * @param {GameState} gameState - Central game state
+     * @param {GameEngine} gameEngine - Game engine for card plays
+     */
     constructor(gameState, gameEngine) {
         this.gameState = gameState;
         this.gameEngine = gameEngine;

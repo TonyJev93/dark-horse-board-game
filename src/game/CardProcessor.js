@@ -1,4 +1,17 @@
+/**
+ * Pure functions for processing card effects on horse order
+ * All methods are immutable and return new arrays
+ *
+ * @class CardProcessor
+ */
 export class CardProcessor {
+    /**
+     * Process a card and return new horse order
+     * @param {Object} card - Card object with type and optional value/target
+     * @param {number[]} horseOrder - Current horse ranking (7th to 1st)
+     * @param {string} playerName - Player name for message generation
+     * @returns {{newOrder: number[], message: string}} New order and event message
+     */
     static processCard(card, horseOrder, playerName) {
         const newOrder = [...horseOrder];
         let message = '';

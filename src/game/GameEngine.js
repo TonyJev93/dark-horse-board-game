@@ -2,7 +2,19 @@ import { CardProcessor } from './CardProcessor.js';
 import { GameSetup } from './GameSetup.js';
 import { ScoreCalculator } from './ScoreCalculator.js';
 
+/**
+ * Main game engine coordinating game flow, card processing, and AI turns
+ * Manages turns, emits game events, and orchestrates state updates
+ *
+ * @class GameEngine
+ */
 export class GameEngine {
+    /**
+     * Initialize game engine with dependencies
+     * @param {GameState} gameState - Central game state
+     * @param {SceneManager} sceneManager - 3D scene manager
+     * @param {UIManager} uiManager - UI manager
+     */
     constructor(gameState, sceneManager, uiManager) {
         this.gameState = gameState;
         this.sceneManager = sceneManager;
@@ -24,6 +36,9 @@ export class GameEngine {
         });
     }
 
+    /**
+     * Initialize game (setup horses and dark horse)
+     */
     init() {
         GameSetup.initializeGame(this.gameState);
         this.eventBus.emit('game:initialized', {

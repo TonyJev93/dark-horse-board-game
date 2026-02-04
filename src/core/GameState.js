@@ -1,7 +1,20 @@
 import { PLAYER_COUNT, HORSE_COUNT, DARK_HORSE_TOKENS, RANK_POINTS } from './GameConfig.js';
 import { EventBus } from './EventBus.js';
 
+/**
+ * Central game state manager with event-driven architecture
+ * Manages game state, emits events on state changes, and handles immutability
+ *
+ * @class GameState
+ * @example
+ * const gameState = new GameState();
+ * gameState.on('state:changed', (data) => console.log('State changed:', data));
+ * gameState.turn = 1; // Automatically emits 'state:changed' event
+ */
 export class GameState {
+    /**
+     * Initialize game state with default values
+     */
     constructor() {
         this.eventBus = new EventBus();
         this._state = {

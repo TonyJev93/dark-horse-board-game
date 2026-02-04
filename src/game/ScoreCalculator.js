@@ -1,4 +1,15 @@
+/**
+ * Pure functions for calculating final game scores
+ * Implements scoring rules from GAME_RULES.md
+ *
+ * @class ScoreCalculator
+ */
 export class ScoreCalculator {
+    /**
+     * Calculate final scores for all players
+     * @param {GameState} gameState - Current game state
+     * @returns {Array<{playerIdx: number, score: number, details: string}>} Player scores
+     */
     static calculateScores(gameState) {
         const results = [];
         const dhInTop3 = gameState.horseOrder.slice(4).includes(gameState.darkHorseId);

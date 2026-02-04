@@ -1,4 +1,14 @@
+/**
+ * Manages Three.js 3D scene, camera, and rendering
+ * Handles horse animations and scene updates
+ *
+ * @class SceneManager
+ */
 export class SceneManager {
+    /**
+     * Initialize scene manager
+     * @param {HTMLElement} container - DOM container for WebGL renderer
+     */
     constructor(container) {
         this.container = container;
         this.scene = null;
@@ -7,6 +17,9 @@ export class SceneManager {
         this.horses = {};
     }
 
+    /**
+     * Setup Three.js scene, camera, and renderer
+     */
     init() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x507d2a);

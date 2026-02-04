@@ -456,83 +456,9 @@ npx eslint --init
 
 ---
 
-## Phase 5: 테스트 구축
+## Phase 5: 문서화 및 TypeScript
 
-### 5.1. 유닛 테스트 (Vitest)
-
-**설치:**
-```bash
-npm install --save-dev vitest
-```
-
-**테스트 구조:**
-```
-tests/
-├── unit/
-│   ├── GameState.test.js
-│   ├── CardProcessor.test.js
-│   └── ScoreCalculator.test.js
-└── integration/
-    └── GameEngine.test.js
-```
-
-**예시 테스트:**
-```javascript
-// tests/unit/ScoreCalculator.test.js
-import { describe, it, expect } from 'vitest';
-import { ScoreCalculator } from '../../src/game/ScoreCalculator';
-
-describe('ScoreCalculator', () => {
-    it('calculates base score correctly', () => {
-        const horseOrder = [7, 6, 5, 4, 3, 2, 1];
-        const bettingCards = [1, 2]; // 1st and 2nd place
-        const score = ScoreCalculator.calculateBaseScore(horseOrder, bettingCards);
-        expect(score).toBe(17); // 10 + 7
-    });
-    
-    it('applies double bonus for identical cards', () => {
-        const horseOrder = [7, 6, 5, 4, 3, 2, 1];
-        const bettingCards = [1, 1]; // Two same cards
-        const score = ScoreCalculator.calculateBaseScore(horseOrder, bettingCards);
-        expect(score).toBe(20); // 10 * 2
-    });
-    
-    it('calculates dark horse bonus correctly', () => {
-        const darkHorseRank = 1; // 1st place
-        const tokenCount = 1;
-        const bonus = ScoreCalculator.calculateDarkHorseBonus(darkHorseRank, tokenCount);
-        expect(bonus).toBe(5);
-    });
-});
-```
-
-### 5.2. E2E 테스트 (Playwright - 선택)
-
-**전체 게임 플로우 테스트:**
-```javascript
-// tests/e2e/game-flow.test.js
-test('complete game flow', async ({ page }) => {
-    await page.goto('http://localhost:3000');
-    
-    // 게임 시작 확인
-    await expect(page.locator('#player-status')).toBeVisible();
-    
-    // 카드 플레이
-    await page.locator('.card').first().click();
-    
-    // AI 턴 대기
-    await page.waitForTimeout(2000);
-    
-    // 게임 종료까지 진행
-    // ...
-});
-```
-
----
-
-## Phase 6: 문서화 및 주석
-
-### 6.1. JSDoc 주석 추가
+### 5.1. JSDoc 주석 추가
 
 **각 모듈에 API 문서 작성:**
 ```javascript
@@ -549,7 +475,7 @@ export function processForwardCard(horseOrder, horseId, value) {
 }
 ```
 
-### 6.2. README 업데이트
+### 5.2. README 업데이트
 
 **프로젝트 구조 문서화:**
 ```markdown
@@ -573,7 +499,7 @@ npm test
 \`\`\`
 ```
 
-### 6.3. 아키텍처 다이어그램
+### 5.3. 아키텍처 다이어그램
 
 **ARCHITECTURE.md 생성:**
 ```markdown
@@ -611,16 +537,13 @@ main.js
 ## 작업 우선순위
 
 ### 필수 (Phase 1-3)
-1. **Phase 1**: 파일 분리 (CSS, JS)
-2. **Phase 2**: ES6 모듈화
-3. **Phase 3**: 아키텍처 개선 (이벤트 시스템, 순수 함수)
+1. **Phase 1**: 파일 분리 (CSS, JS) ✅
+2. **Phase 2**: ES6 모듈화 ✅
+3. **Phase 3**: 아키텍처 개선 (이벤트 시스템, 순수 함수) ✅
 
 ### 권장 (Phase 4-5)
-4. **Phase 4**: Vite 설정 (개발 서버, HMR)
-5. **Phase 5**: 테스트 구축 (최소한 핵심 로직 테스트)
-
-### 선택 (Phase 6)
-6. **Phase 6**: TypeScript, E2E 테스트, 문서화
+4. **Phase 4**: Vite 설정 (개발 서버, HMR) ✅
+5. **Phase 5**: 문서화 및 TypeScript (현재 진행)
 
 ---
 
@@ -648,34 +571,30 @@ main.js
 - [x] 불변성 강화 (setState 패턴)
 - [x] 게임 로직 순수 함수화 (Phase 2에서 이미 완료)
 
-### Phase 4
-- [ ] `npm run dev` 실행 시 개발 서버 구동
-- [ ] Hot Reload 동작 확인
-- [ ] `npm run build` 성공
-- [ ] 빌드된 결과물 정상 동작
+### ✅ Phase 4 - 완료 (2026-02-04)
+- [x] `npm run dev` 실행 시 개발 서버 구동
+- [x] Hot Reload 동작 확인
+- [x] `npm run build` 성공
+- [x] 빌드된 결과물 정상 동작
+- [x] ESLint + Prettier 설정
 
 ### Phase 5
-- [ ] 핵심 로직 유닛 테스트 작성 (최소 80% 커버리지)
-- [ ] `npm test` 모든 테스트 통과
-- [ ] CI/CD 파이프라인 설정 (선택)
-
-### Phase 6
-- [ ] 모든 public API에 JSDoc 주석
-- [ ] README.md 업데이트
+- [ ] 모든 public API에 JSDoc 주석 추가
+- [ ] README.md 작성
 - [ ] ARCHITECTURE.md 작성
+- [ ] TypeScript 마이그레이션 (선택)
 
 ---
 
 ## 예상 소요 시간
 
-- **Phase 1**: 2-3시간
-- **Phase 2**: 3-4시간
-- **Phase 3**: 4-6시간
-- **Phase 4**: 1-2시간
-- **Phase 5**: 4-6시간
-- **Phase 6**: 2-3시간
+- **Phase 1**: 2-3시간 ✅
+- **Phase 2**: 3-4시간 ✅
+- **Phase 3**: 4-6시간 ✅
+- **Phase 4**: 1-2시간 ✅
+- **Phase 5**: 2-3시간 (문서화 + TypeScript)
 
-**총 예상 시간**: 16-24시간
+**총 소요 시간**: 12-18시간
 
 ---
 
@@ -781,7 +700,8 @@ src/
 | 2.0 | 2026-02-04 | Phase 1 완료 업데이트 |
 | 3.0 | 2026-02-04 | Phase 2 완료 업데이트, 실제 구현 내용 반영 |
 | 4.0 | 2026-02-04 | Phase 3 완료 업데이트, 이벤트 기반 아키텍처 |
+| 5.0 | 2026-02-04 | Phase 4 완료, Phase 5/6 통합 (테스트 제거) |
 
-**문서 버전**: 4.0  
+**문서 버전**: 5.0  
 **작성일**: 2026-02-04  
-**최종 수정일**: 2026-02-04 (Phase 1, 2, 3 완료)
+**최종 수정일**: 2026-02-04 (Phase 1-4 완료, Phase 5 진행)
