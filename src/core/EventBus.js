@@ -8,20 +8,20 @@ export class EventBus {
             this.listeners.set(event, []);
         }
         this.listeners.get(event).push(callback);
-        
+
         return () => this.off(event, callback);
     }
 
     off(event, callback) {
         if (!this.listeners.has(event)) return;
-        
+
         const callbacks = this.listeners.get(event);
         const index = callbacks.indexOf(callback);
-        
+
         if (index !== -1) {
             callbacks.splice(index, 1);
         }
-        
+
         if (callbacks.length === 0) {
             this.listeners.delete(event);
         }
@@ -29,9 +29,9 @@ export class EventBus {
 
     emit(event, data) {
         if (!this.listeners.has(event)) return;
-        
+
         const callbacks = this.listeners.get(event);
-        callbacks.forEach(callback => {
+        callbacks.forEach((callback) => {
             try {
                 callback(data);
             } catch (error) {

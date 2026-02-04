@@ -30,7 +30,12 @@ export class HorseModel {
 
         const legGeo = new THREE.BoxGeometry(0.4, 1.5, 0.4);
         const legs = [];
-        const legPos = [{x: 0.4, z: 0.8}, {x: -0.4, z: 0.8}, {x: 0.4, z: -0.8}, {x: -0.4, z: -0.8}];
+        const legPos = [
+            { x: 0.4, z: 0.8 },
+            { x: -0.4, z: 0.8 },
+            { x: 0.4, z: -0.8 },
+            { x: -0.4, z: -0.8 },
+        ];
         legPos.forEach((pos) => {
             const leg = new THREE.Mesh(legGeo, mat);
             leg.position.set(pos.x, 0.75, pos.z);
@@ -40,9 +45,10 @@ export class HorseModel {
         });
 
         const canvas = document.createElement('canvas');
-        canvas.width = 128; canvas.height = 128;
+        canvas.width = 128;
+        canvas.height = 128;
         const ctx = canvas.getContext('2d');
-        
+
         if (isMyHorse) {
             ctx.fillStyle = '#38bdf8';
         } else if (isDarkHorse) {
@@ -50,19 +56,21 @@ export class HorseModel {
         } else {
             ctx.fillStyle = '#ffffff';
         }
-        
-        ctx.beginPath(); 
-        ctx.arc(64, 64, 60, 0, Math.PI*2); 
+
+        ctx.beginPath();
+        ctx.arc(64, 64, 60, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = (isMyHorse || isDarkHorse) ? 'white' : 'black';
-        ctx.font = 'bold 80px sans-serif'; 
-        ctx.textAlign = 'center'; 
+        ctx.fillStyle = isMyHorse || isDarkHorse ? 'white' : 'black';
+        ctx.font = 'bold 80px sans-serif';
+        ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(id, 64, 64);
 
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
-            map: new THREE.CanvasTexture(canvas) 
-        }));
+        const sprite = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(canvas),
+            })
+        );
         sprite.position.y = 4.5;
         sprite.scale.set(1.5, 1.5, 1);
         group.add(sprite);

@@ -1,13 +1,13 @@
 /* Player status and turn indicators */
-.turn-indicator { 
-    transition: all 0.5s ease; 
-    border: 2px solid transparent; 
+.turn-indicator {
+    transition: all 0.5s ease;
+    border: 2px solid transparent;
 }
 
-.active-turn { 
-    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); 
-    border-color: #3b82f6 !important; 
-    background: rgba(30, 58, 138, 0.4) !important; 
+.active-turn {
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+    border-color: #3b82f6 !important;
+    background: rgba(30, 58, 138, 0.4) !important;
 }
 
 /* My horse rank highlight */

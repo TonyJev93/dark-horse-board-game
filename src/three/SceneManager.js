@@ -12,7 +12,12 @@ export class SceneManager {
         this.scene.background = new THREE.Color(0x507d2a);
         this.scene.fog = new THREE.Fog(0x507d2a, 30, 150);
 
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
         this.camera.position.set(35, 25, 40);
         this.camera.lookAt(0, 0, 0);
 
@@ -59,17 +64,18 @@ export class SceneManager {
 
         const laneCount = 7;
         const laneWidth = trackWidth / laneCount;
-        for(let i = 0; i <= laneCount; i++) {
+        for (let i = 0; i <= laneCount; i++) {
             const lineGeo = new THREE.PlaneGeometry(0.2, trackLength);
             const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const line = new THREE.Mesh(lineGeo, lineMat);
             line.rotation.x = -Math.PI / 2;
-            line.position.set(-trackWidth/2 + (i * laneWidth), 0.03, 0);
+            line.position.set(-trackWidth / 2 + i * laneWidth, 0.03, 0);
             this.scene.add(line);
 
             if (i < laneCount) {
                 const canvas = document.createElement('canvas');
-                canvas.width = 128; canvas.height = 128;
+                canvas.width = 128;
+                canvas.height = 128;
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'rgba(255,255,255,0.7)';
                 ctx.font = 'bold 80px sans-serif';
@@ -78,11 +84,15 @@ export class SceneManager {
                 ctx.fillText(i + 1, 64, 64);
 
                 const tex = new THREE.CanvasTexture(canvas);
-                const numMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.8 });
+                const numMat = new THREE.MeshBasicMaterial({
+                    map: tex,
+                    transparent: true,
+                    opacity: 0.8,
+                });
                 const numGeo = new THREE.PlaneGeometry(2.5, 2.5);
                 const numMesh = new THREE.Mesh(numGeo, numMat);
                 numMesh.rotation.x = -Math.PI / 2;
-                numMesh.position.set(-trackWidth/2 + (i * laneWidth) + (laneWidth/2), 0.04, 30);
+                numMesh.position.set(-trackWidth / 2 + i * laneWidth + laneWidth / 2, 0.04, 30);
                 this.scene.add(numMesh);
             }
         }
@@ -91,18 +101,18 @@ export class SceneManager {
     setupInteraction() {
         let isMouseDown = false;
         let prevMouseX = 0;
-        
-        document.addEventListener('mousedown', (e) => { 
-            if(e.target.tagName === 'CANVAS') {
-                isMouseDown = true; 
-                prevMouseX = e.clientX; 
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'CANVAS') {
+                isMouseDown = true;
+                prevMouseX = e.clientX;
             }
         });
-        
-        document.addEventListener('mouseup', () => isMouseDown = false);
-        
+
+        document.addEventListener('mouseup', () => (isMouseDown = false));
+
         document.addEventListener('mousemove', (e) => {
-            if(isMouseDown) {
+            if (isMouseDown) {
                 const deltaX = e.clientX - prevMouseX;
                 this.camera.position.x += deltaX * 0.08;
                 this.camera.lookAt(0, 0, 0);
@@ -118,8 +128,8 @@ export class SceneManager {
 
     updateHorsePositions(horseOrder, immediate = false) {
         horseOrder.forEach((id, rank) => {
-            const targetZ = 25 - (rank * 8);
-            const targetX = -20 + (id - 0.5) * (40/7);
+            const targetZ = 25 - rank * 8;
+            const targetX = -20 + (id - 0.5) * (40 / 7);
             if (immediate) {
                 this.horses[id].position.set(targetX, 0, targetZ);
             } else {
@@ -129,7 +139,7 @@ export class SceneManager {
     }
 
     animateHorses(time) {
-        Object.values(this.horses).forEach(horse => {
+        Object.values(this.horses).forEach((horse) => {
             const { legs, targetPos } = horse.userData;
 
             if (targetPos) {
@@ -146,7 +156,9 @@ export class SceneManager {
                 } else {
                     horse.position.y = THREE.MathUtils.lerp(horse.position.y, 0, 0.1);
                     horse.rotation.x = THREE.MathUtils.lerp(horse.rotation.x, 0, 0.1);
-                    legs.forEach(l => l.rotation.x = THREE.MathUtils.lerp(l.rotation.x, 0, 0.1));
+                    legs.forEach(
+                        (l) => (l.rotation.x = THREE.MathUtils.lerp(l.rotation.x, 0, 0.1))
+                    );
                 }
             }
         });
@@ -165,17 +177,17 @@ export class SceneManager {
     animateCamera(targetHorseId, onComplete) {
         const winnerHorse = this.horses[targetHorseId];
         const targetCamPos = new THREE.Vector3(
-            winnerHorse.position.x + 5, 
-            8, 
+            winnerHorse.position.x + 5,
+            8,
             winnerHorse.position.z + 12
         );
-        
+
         let frame = 0;
         const animate = () => {
-            if(frame < 120) {
+            if (frame < 120) {
                 this.camera.position.lerp(targetCamPos, 0.05);
                 this.camera.lookAt(winnerHorse.position);
-                frame++; 
+                frame++;
                 requestAnimationFrame(animate);
             } else if (onComplete) {
                 onComplete();

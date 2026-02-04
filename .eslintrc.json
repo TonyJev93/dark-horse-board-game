@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "prettier"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "prefer-const": "warn",
+    "eqeqeq": "warn"
+  },
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    ".opencode/",
+    "vite-dev.log"
+  ]
+}

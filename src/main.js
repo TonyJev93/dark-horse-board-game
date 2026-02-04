@@ -15,31 +15,31 @@ class DarkHorseGame {
 
     init() {
         this.sceneManager.init();
-        
+
         this.uiManager = new UIManager(this.gameState, null);
         this.gameEngine = new GameEngine(this.gameState, this.sceneManager, this.uiManager);
         this.uiManager.gameEngine = this.gameEngine;
-        
+
         this.gameEngine.init();
-        
+
         this.createHorses();
         this.setupEventListeners();
-        
+
         this.gameEngine.startPlayerTurn();
         this.uiManager.render();
-        
+
         this.startAnimationLoop();
         this.setupWindowResize();
     }
 
     createHorses() {
-        this.gameState.horseIds.forEach(id => {
+        this.gameState.horseIds.forEach((id) => {
             const isMyHorse = this.gameState.bettings[0].includes(id);
             const isDarkHorse = id === this.gameState.darkHorseId;
             const horse = HorseModel.createHorse(id, isMyHorse, isDarkHorse);
             this.sceneManager.addHorse(id, horse);
         });
-        
+
         this.sceneManager.updateHorsePositions(this.gameState.horseOrder, true);
     }
 
@@ -48,7 +48,7 @@ class DarkHorseGame {
         const btnSkipToken = document.getElementById('btn-skip-token');
         const modalGetToken = document.getElementById('modal-get-token');
         const modalSkipToken = document.getElementById('modal-skip-token');
-        
+
         if (btnGetToken) {
             btnGetToken.onclick = () => this.gameEngine.takeDarkHorseToken(0);
         }

@@ -2,8 +2,8 @@ export class CardProcessor {
     static processCard(card, horseOrder, playerName) {
         const newOrder = [...horseOrder];
         let message = '';
-        let horseId = card.target || horseOrder[Math.floor(Math.random() * 7)];
-        let currentRank = newOrder.indexOf(horseId);
+        const horseId = card.target || horseOrder[Math.floor(Math.random() * 7)];
+        const currentRank = newOrder.indexOf(horseId);
 
         if (card.type === 'rider_fall_off') {
             const thirdRankHorse = newOrder[4];
@@ -34,7 +34,7 @@ export class CardProcessor {
             newOrder.splice(newRank, 0, horseId);
         } else if (card.type === 'swap') {
             const idx = Math.min(5, Math.max(0, currentRank));
-            [newOrder[idx], newOrder[idx+1]] = [newOrder[idx+1], newOrder[idx]];
+            [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
             message = `${playerName}: 순위 탈환!`;
         }
 
