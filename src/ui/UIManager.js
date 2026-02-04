@@ -117,6 +117,7 @@ export class UIManager {
         [...this.gameState.horseOrder].reverse().forEach((id, idx) => {
             const isDark = id === this.gameState.darkHorseId;
             const isMyHorse = this.gameState.bettings[0].includes(id);
+            const horseColor = isDark ? '000000' : HORSE_COLORS[id].toString(16).padStart(6, '0');
             const div = document.createElement('div');
             div.className = `flex justify-between items-center p-3.5 rounded-2xl border transition-all duration-700 ${isMyHorse ? 'my-horse-rank' : isDark ? 'border-red-500/50 bg-red-500/10' : 'bg-black/40 border-white/5 text-white'}`;
             div.innerHTML = `
@@ -124,7 +125,9 @@ export class UIManager {
                     <span class="font-black ${isMyHorse ? 'text-white' : 'text-blue-400'} text-xs">${idx + 1}</span>
                     <span class="font-bold text-sm">HORSE #${id} ${isMyHorse ? '<span class="ml-1 text-[8px] bg-white text-red-600 px-1 rounded-sm">MY</span>' : ''}</span>
                 </div>
-                <div class="w-6 h-6 rounded-lg border border-white/20" style="background-color: #${HORSE_COLORS[id].toString(16).padStart(6, '0')}"></div>
+                <div class="w-6 h-6 rounded-lg border border-white/20 relative flex items-center justify-center" style="background-color: #${horseColor}">
+                    ${isDark ? '<span class="text-white text-[8px] font-black">DH</span>' : ''}
+                </div>
             `;
             rankContainer.appendChild(div);
         });

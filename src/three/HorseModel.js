@@ -15,7 +15,7 @@ export class HorseModel {
      */
     static createHorse(id, isMyHorse, isDarkHorse) {
         const group = new THREE.Group();
-        const color = HORSE_COLORS[id];
+        const color = isDarkHorse ? 0x000000 : HORSE_COLORS[id];
         const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 });
         const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
 
