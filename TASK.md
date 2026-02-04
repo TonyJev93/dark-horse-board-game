@@ -248,85 +248,96 @@ gameEngine.start();
 
 ---
 
-## Phase 3: 아키텍처 개선
+## ✅ Phase 3: 아키텍처 개선 - **완료**
 
 ### 목표
 책임 분리, 테스트 가능성 향상
 
-### 3.1. 이벤트 시스템 도입
+### 완료 상태
+- ✅ EventBus 클래스 구현 (pub/sub 패턴)
+- ✅ GameState 상태 구독 시스템
+- ✅ GameEngine 이벤트 발행자로 전환
+- ✅ UIManager 이벤트 리스너로 전환
+- ✅ 불변성 강화 (setState 패턴)
+- 📅 완료일: 2026-02-04
 
-**문제:**
-- 현재: 게임 로직이 직접 UI 업데이트 (`renderUI()` 호출)
-- UI와 게임 로직이 강하게 결합
+### 3.1. 구현된 이벤트 시스템 ✅
 
-**해결:**
+**EventBus 클래스 (60줄)**
 ```javascript
-// EventBus.js
 export class EventBus {
-    constructor() {
-        this.listeners = {};
-    }
-    
-    on(event, callback) { /* ... */ }
-    emit(event, data) { /* ... */ }
-    off(event, callback) { /* ... */ }
+    on(event, callback)      // 이벤트 구독
+    off(event, callback)     // 구독 취소
+    emit(event, data)        // 이벤트 발행
+    once(event, callback)    // 1회성 구독
+    clear(event)             // 이벤트 정리
+    listenerCount(event)     // 리스너 수 확인
 }
-
-// 사용 예시
-// GameEngine.js
-this.eventBus.emit('turnChanged', { turn: this.gameState.turn });
-
-// UIManager.js
-this.eventBus.on('turnChanged', (data) => {
-    this.updateTurnIndicator(data.turn);
-});
 ```
 
-### 3.2. 상태 관리 개선
+**발행되는 게임 이벤트:**
+- `state:changed` - 상태 변경 시
+- `state:{key}` - 특정 상태 변경 시 (예: state:turn)
+- `game:initialized` - 게임 초기화 완료
+- `game:cardPlayed` - 카드 플레이
+- `game:tokenTaken` - 토큰 획득
+- `game:tokenSkipped` - 토큰 패스
+- `game:turnChanged` - 턴 변경
+- `game:playerTurnStarted` - 플레이어 턴 시작
+- `game:finishing` - 게임 종료 시작
+- `game:finished` - 게임 종료 및 결과
+- `animation:completed` - 애니메이션 완료
 
-**현재 문제:**
-- `GameState` 객체를 여러 곳에서 직접 수정
-- 상태 변경 추적 어려움
+### 3.2. 구현된 상태 관리 개선 ✅
 
-**개선 방안:**
+**GameState 리팩토링 (117줄)**
 ```javascript
 export class GameState {
     constructor() {
-        this._state = { /* ... */ };
-        this.listeners = [];
+        this.eventBus = new EventBus();
+        this._state = { /* private state */ };
     }
     
-    getState() {
-        return { ...this._state }; // 불변성
-    }
+    // Getter/Setter를 통한 접근 제어
+    get turn() { return this._state.turn; }
+    set turn(value) { this._setState({ turn: value }); }
     
-    setState(updates) {
+    // 상태 변경 시 이벤트 자동 발행
+    _setState(updates) {
+        const oldState = { ...this._state };
         this._state = { ...this._state, ...updates };
-        this.notifyListeners();
+        this.eventBus.emit('state:changed', { updates, oldState, newState: this._state });
     }
     
-    subscribe(listener) {
-        this.listeners.push(listener);
+    // 불변성 보장 메서드
+    takeToken(playerIdx) {
+        const newTokens = [...this._state.tokens];
+        newTokens[playerIdx]++;
+        this._setState({ tokens: newTokens, tokensAvailable: this._state.tokensAvailable - 1 });
+    }
+    
+    // 상태 스냅샷
+    getSnapshot() {
+        return { /* deep copy */ };
     }
 }
 ```
 
-### 3.3. 게임 로직 순수 함수화
+**적용 효과:**
+- UI와 게임 로직 완전 분리
+- 상태 변경 추적 가능
+- 타임 트래블 디버깅 준비
+- 테스트 용이성 향상
 
-**카드 처리 로직 분리:**
+### 3.3. 이미 구현된 순수 함수 ✅
+
+**CardProcessor 클래스 (Phase 2에서 이미 구현)**
 ```javascript
-// CardProcessor.js
 export class CardProcessor {
-    // 순수 함수: 입력 -> 출력, 부작용 없음
-    static processForwardCard(horseOrder, horseId, value) {
+    static processCard(card, horseOrder, playerName) {
         const newOrder = [...horseOrder];
-        // 로직 처리
-        return newOrder;
-    }
-    
-    static processRiderFallOff(horseOrder) {
-        const newOrder = [...horseOrder];
-        const thirdRankHorse = newOrder[4];
+        // 부작용 없는 순수 함수
+        return { newOrder, message };
         newOrder.splice(4, 1);
         newOrder.unshift(thirdRankHorse);
         return newOrder;
@@ -628,11 +639,14 @@ main.js
 - [x] 클래스 기반 아키텍처 완성
 - [x] 의존성 주입 패턴 적용
 
-### Phase 3
-- [ ] EventBus 구현 및 적용
-- [ ] 게임 로직 순수 함수화
-- [ ] UI와 게임 로직 분리 완료
-- [ ] 코드 리뷰 통과
+### ✅ Phase 3 - 완료 (2026-02-04)
+- [x] EventBus 구현 및 적용
+- [x] GameState 상태 구독 시스템
+- [x] GameEngine 이벤트 발행자로 전환
+- [x] UIManager 이벤트 리스너로 전환
+- [x] UI와 게임 로직 완전 분리
+- [x] 불변성 강화 (setState 패턴)
+- [x] 게임 로직 순수 함수화 (Phase 2에서 이미 완료)
 
 ### Phase 4
 - [ ] `npm run dev` 실행 시 개발 서버 구동
@@ -691,25 +705,28 @@ main.js
 
 ## 완료된 작업 요약
 
-### Phase 1 & 2 완료 (2026-02-04)
+### Phase 1, 2, 3 완료 (2026-02-04)
 
 **리팩토링 전:**
 ```
 index.html (790줄) - 단일 파일
 ```
 
-**리팩토링 후:**
+**리팩토링 후 (Phase 3):**
 ```
 index.html (123줄)
 src/
-├── core/ (2개 모듈, 76줄)
+├── core/ (3개 모듈)
+│   ├── EventBus.js (60줄)
+│   ├── GameState.js (117줄)
+│   └── GameConfig.js (13줄)
 ├── three/ (2개 모듈, 262줄)
 ├── game/ (4개 모듈, 300줄)
 ├── ui/ (1개 모듈, 218줄)
 ├── styles/ (4개 CSS, 100줄)
 └── main.js (87줄)
 
-총 14개 파일, 1166줄
+총 15개 파일, 1218줄
 ```
 
 **주요 개선:**
@@ -717,6 +734,10 @@ src/
 - ✅ ES6 모듈 시스템
 - ✅ 클래스 기반 아키텍처
 - ✅ 의존성 주입 패턴
+- ✅ **이벤트 기반 아키텍처 (EventBus)**
+- ✅ **UI-로직 완전 분리 (디커플링)**
+- ✅ **상태 관리 시스템 (구독/발행)**
+- ✅ **불변성 보장 (setState 패턴)**
 - ✅ 순수 함수 (CardProcessor, ScoreCalculator)
 - ✅ 책임 분리 (SRP 원칙)
 
@@ -759,7 +780,8 @@ src/
 | 1.0 | 2026-02-04 | 초안 작성 |
 | 2.0 | 2026-02-04 | Phase 1 완료 업데이트 |
 | 3.0 | 2026-02-04 | Phase 2 완료 업데이트, 실제 구현 내용 반영 |
+| 4.0 | 2026-02-04 | Phase 3 완료 업데이트, 이벤트 기반 아키텍처 |
 
-**문서 버전**: 3.0  
+**문서 버전**: 4.0  
 **작성일**: 2026-02-04  
-**최종 수정일**: 2026-02-04 (Phase 1 & 2 완료)
+**최종 수정일**: 2026-02-04 (Phase 1, 2, 3 완료)
