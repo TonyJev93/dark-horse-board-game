@@ -129,7 +129,7 @@ export class UIManager {
             div.innerHTML = `
                 <div class="flex items-center gap-3">
                     <span class="font-black ${isMyHorse ? 'text-white' : 'text-blue-400'} text-xs">${idx + 1}</span>
-                    <span class="font-bold text-sm">HORSE #${id} ${isMyHorse ? '<span class="ml-1 text-[8px] bg-white text-red-600 px-1 rounded-sm">MY</span>' : ''}</span>
+                    <span class="font-bold text-sm">${id}번 말 ${isMyHorse ? '<span class="ml-1 text-[8px] bg-white text-red-600 px-1 rounded-sm">MY</span>' : ''}</span>
                 </div>
                 <div class="w-6 h-6 rounded-lg border border-white/20 relative flex items-center justify-center" style="background-color: #${horseColor}">
                     ${isDark ? '<span class="text-white text-[8px] font-black">DH</span>' : ''}
@@ -138,7 +138,7 @@ export class UIManager {
             rankContainer.appendChild(div);
         });
 
-        document.getElementById('dark-horse-info').innerText = `DH: #${this.gameState.darkHorseId}`;
+        document.getElementById('dark-horse-info').innerText = `DH: ${this.gameState.darkHorseId}번 말`;
     }
 
     renderTokensRemaining() {
@@ -207,12 +207,19 @@ export class UIManager {
                         : 'text-purple-600';
 
             const description = card.target
-                ? `말 #${card.target}`
+                ? `${card.target}번 말`
                 : card.type === 'rider_fall_off'
                   ? '3등 → 7등'
                   : '전략적 선택';
 
-            el.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${card.type.replace('_', ' ')}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
+            const koreanType = {
+                'forward': '직진',
+                'backward': '후진',
+                'swap': '교환',
+                'rider_fall_off': '낙마'
+            }[card.type] || card.type.replaceAll('_', ' ');
+
+            el.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
 
             if (!isDisabled) {
                 el.onclick = () => this.gameEngine.playCard(0, card.id);

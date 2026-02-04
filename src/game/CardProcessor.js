@@ -22,14 +22,14 @@ export class CardProcessor {
             const thirdRankHorse = newOrder[4];
             newOrder.splice(4, 1);
             newOrder.unshift(thirdRankHorse);
-            message = `${playerName}: 3등 말 #${thirdRankHorse} 낙마!`;
+            message = `${playerName}: 3등 말 ${thirdRankHorse}번 낙마!`;
         } else if (card.type === 'forward') {
             let moveValue = card.value || 1;
             if (currentRank === 6) {
                 moveValue = -moveValue;
-                message = `${playerName}: #${horseId} 1등이라 후진!`;
+                message = `${playerName}: ${horseId}번 말 1등이라 후진!`;
             } else {
-                message = `${playerName}: #${horseId} 가속!`;
+                message = `${playerName}: ${horseId}번 말 가속!`;
             }
             const newRank = Math.max(0, Math.min(6, currentRank + moveValue));
             newOrder.splice(currentRank, 1);
@@ -38,9 +38,9 @@ export class CardProcessor {
             let moveValue = card.value || 1;
             if (currentRank === 0) {
                 moveValue = -moveValue;
-                message = `${playerName}: #${horseId} 꼴찌라 전진!`;
+                message = `${playerName}: ${horseId}번 말 꼴찌라 전진!`;
             } else {
-                message = `${playerName}: #${horseId} 주춤...`;
+                message = `${playerName}: ${horseId}번 말 주춤...`;
             }
             const newRank = Math.max(0, Math.min(6, currentRank - moveValue));
             newOrder.splice(currentRank, 1);

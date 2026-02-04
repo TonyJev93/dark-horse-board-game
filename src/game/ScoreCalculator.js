@@ -28,14 +28,14 @@ export class ScoreCalculator {
                 const pts = gameState.rankPoints[rankIdx];
 
                 if (bettingCounts[id] === 2) {
-                    if (!bettingInfo.includes(`#${id}`)) {
+                    if (!bettingInfo.includes(`${id}번`)) {
                         const doublePoints = pts * 2;
                         score += doublePoints;
-                        bettingInfo += ` #${id}×2(${doublePoints}점)`;
+                        bettingInfo += ` ${id}번×2(${doublePoints}점)`;
                     }
                 } else {
                     score += pts;
-                    bettingInfo += ` #${id}(${pts}점)`;
+                    bettingInfo += ` ${id}번(${pts}점)`;
                 }
             });
 
