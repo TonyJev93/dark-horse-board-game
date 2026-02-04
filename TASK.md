@@ -44,10 +44,17 @@ dark-horse-sample/
 
 ---
 
-## Phase 1: 파일 분리 (최소 변경)
+## ✅ Phase 1: 파일 분리 (최소 변경) - **완료**
 
 ### 목표
 기존 코드 동작을 유지하면서 물리적으로만 분리
+
+### 완료 상태
+- ✅ CSS 4개 파일로 분리 (100줄)
+- ✅ JavaScript 7개 파일로 분리 (603줄)
+- ✅ index.html 130줄로 축소 (기존 790줄에서 83% 감소)
+- ✅ 브라우저 테스트 통과
+- 📅 완료일: 2026-02-04
 
 ### 작업 내용
 
@@ -135,54 +142,58 @@ src/
 
 ---
 
-## Phase 2: ES6 모듈화
+## ✅ Phase 2: ES6 모듈화 - **완료**
 
 ### 목표
 전역 네임스페이스 오염 제거, 의존성 명확화
 
+### 완료 상태
+- ✅ 전역 변수 완전 제거 (GameState, horses, scene 등)
+- ✅ ES6 모듈 시스템 (import/export) 도입
+- ✅ 클래스 기반 리팩토링 완료
+- ✅ 의존성 주입 패턴 적용
+- ✅ 10개 모듈로 재구성 (1135줄)
+- 📅 완료일: 2026-02-04
+
 ### 작업 내용
 
-#### 2.1. 모듈 구조 설계
+#### 2.1. 실제 구현된 모듈 구조 ✅
 ```
 src/
 ├── core/
-│   ├── GameState.js         # 게임 상태 관리 클래스
-│   └── GameConfig.js        # 게임 설정 상수
+│   ├── GameState.js         # 게임 상태 관리 클래스 (63줄)
+│   └── GameConfig.js        # 게임 설정 상수 (13줄)
 ├── three/
-│   ├── SceneManager.js      # Three.js 씬 관리
-│   ├── HorseModel.js        # 말 3D 모델
-│   ├── TrackBuilder.js      # 트랙 생성
-│   └── AnimationController.js # 애니메이션 제어
+│   ├── SceneManager.js      # Three.js 씬 관리 (189줄)
+│   └── HorseModel.js        # 말 3D 모델 생성 (73줄)
 ├── game/
-│   ├── GameEngine.js        # 게임 엔진 (턴 관리, 카드 처리)
-│   ├── CardProcessor.js     # 카드 효과 처리
-│   ├── AIPlayer.js          # AI 로직
-│   └── ScoreCalculator.js   # 점수 계산
+│   ├── GameEngine.js        # 게임 엔진 (턴 관리, 카드 처리, AI) (178줄)
+│   ├── CardProcessor.js     # 카드 효과 처리 순수 함수 (43줄)
+│   ├── GameSetup.js         # 게임 초기화 (32줄)
+│   └── ScoreCalculator.js   # 점수 계산 순수 함수 (47줄)
 ├── ui/
-│   ├── UIManager.js         # UI 전체 관리
-│   ├── PlayerPanel.js       # 플레이어 패널
-│   ├── RankingPanel.js      # 순위 패널
-│   ├── CardArea.js          # 카드 영역
-│   └── ResultScreen.js      # 결과 화면
-└── main.js                  # 애플리케이션 진입점
+│   └── UIManager.js         # UI 전체 관리 (218줄)
+├── styles/
+│   ├── global.css           # 전역 스타일 (15줄)
+│   ├── ui-layer.css         # UI 레이어 (47줄)
+│   ├── player-status.css    # 플레이어 상태 (18줄)
+│   └── result-screen.css    # 결과 화면 (20줄)
+└── main.js                  # 애플리케이션 진입점 (87줄)
+
+총 10개 JavaScript 모듈, 4개 CSS 파일
 ```
 
-#### 2.2. 클래스 기반 리팩토링
+#### 2.2. 구현된 핵심 클래스 ✅
 
-**GameState → GameState 클래스**
+**1. GameState 클래스**
 ```javascript
-// Before (전역 객체)
-const GameState = {
-    turn: 0,
-    playerCount: 4,
-    // ...
-};
-
-// After (클래스)
 export class GameState {
-    constructor(playerCount = 4) {
+    constructor() {
         this.turn = 0;
-        this.playerCount = playerCount;
+        this.playerCount = PLAYER_COUNT;
+        this.horseIds = Array.from({ length: HORSE_COUNT }, (_, i) => i + 1);
+        this.horseOrder = [];
+        this.darkHorseId = null;
         // ...
     }
     
@@ -229,9 +240,11 @@ gameEngine.start();
 ```
 
 **검증:**
-- [ ] 모듈 import/export 정상 동작
-- [ ] 전역 변수 없음 확인
-- [ ] 기존 기능 모두 정상 동작
+- [x] 모듈 import/export 정상 동작
+- [x] 전역 변수 없음 확인 (console 확인 완료)
+- [x] 기존 기능 모두 정상 동작
+- [x] 의존성 주입 패턴 적용
+- [x] 클래스 기반 구조로 완전 전환
 
 ---
 
@@ -602,16 +615,18 @@ main.js
 
 ## 각 Phase 완료 기준
 
-### Phase 1
-- [ ] CSS 4개 파일로 분리, 브라우저에서 정상 로드
-- [ ] JS 7개 파일로 분리, 브라우저에서 정상 동작
-- [ ] 기존 모든 기능 정상 작동 (수동 테스트)
+### ✅ Phase 1 - 완료 (2026-02-04)
+- [x] CSS 4개 파일로 분리, 브라우저에서 정상 로드
+- [x] JS 7개 파일로 분리, 브라우저에서 정상 동작
+- [x] 기존 모든 기능 정상 작동 (수동 테스트)
 
-### Phase 2
-- [ ] 모든 JS 파일이 ES6 모듈로 변환
-- [ ] `type="module"` 사용, import/export 정상 동작
-- [ ] 전역 변수 제거 (console에서 확인)
-- [ ] 기존 모든 기능 정상 작동
+### ✅ Phase 2 - 완료 (2026-02-04)
+- [x] 모든 JS 파일이 ES6 모듈로 변환
+- [x] `type="module"` 사용, import/export 정상 동작
+- [x] 전역 변수 제거 (console에서 확인)
+- [x] 기존 모든 기능 정상 작동
+- [x] 클래스 기반 아키텍처 완성
+- [x] 의존성 주입 패턴 적용
 
 ### Phase 3
 - [ ] EventBus 구현 및 적용
@@ -674,15 +689,53 @@ main.js
 
 ---
 
-## 다음 단계
+## 완료된 작업 요약
 
-1. **Phase 1 시작 전 확인**
-   - [ ] 현재 `index.html` 백업
-   - [ ] Git 커밋 (리팩토링 시작 전 상태 저장)
-   - [ ] 브라우저 개발자 도구에서 현재 동작 확인
+### Phase 1 & 2 완료 (2026-02-04)
 
-2. **Phase 1 작업 시작**
-   - CSS 분리부터 시작 (가장 안전)
+**리팩토링 전:**
+```
+index.html (790줄) - 단일 파일
+```
+
+**리팩토링 후:**
+```
+index.html (123줄)
+src/
+├── core/ (2개 모듈, 76줄)
+├── three/ (2개 모듈, 262줄)
+├── game/ (4개 모듈, 300줄)
+├── ui/ (1개 모듈, 218줄)
+├── styles/ (4개 CSS, 100줄)
+└── main.js (87줄)
+
+총 14개 파일, 1166줄
+```
+
+**주요 개선:**
+- ✅ 전역 변수 완전 제거
+- ✅ ES6 모듈 시스템
+- ✅ 클래스 기반 아키텍처
+- ✅ 의존성 주입 패턴
+- ✅ 순수 함수 (CardProcessor, ScoreCalculator)
+- ✅ 책임 분리 (SRP 원칙)
+
+## 다음 단계 (선택사항)
+
+### Phase 3: 아키텍처 고도화
+- EventBus 패턴 도입
+- 불변성 강화 (Immer.js)
+- 상태 구독 시스템
+
+### Phase 4: 개발 환경
+- Vite 설정 (HMR, 빌드 최적화)
+- TypeScript 마이그레이션
+- ESLint + Prettier
+
+### Phase 5: 테스트
+- Vitest 유닛 테스트
+- Playwright E2E 테스트
+- 80%+ 코드 커버리지
    - 각 파일 분리 후 즉시 동작 확인
    - 문제 발생 시 즉시 롤백 및 재시도
 
@@ -697,6 +750,16 @@ main.js
 
 ---
 
-**문서 버전**: 1.0  
+---
+
+## 버전 히스토리
+
+| 버전 | 날짜 | 변경 사항 |
+|------|------|----------|
+| 1.0 | 2026-02-04 | 초안 작성 |
+| 2.0 | 2026-02-04 | Phase 1 완료 업데이트 |
+| 3.0 | 2026-02-04 | Phase 2 완료 업데이트, 실제 구현 내용 반영 |
+
+**문서 버전**: 3.0  
 **작성일**: 2026-02-04  
-**최종 수정일**: 2026-02-04
+**최종 수정일**: 2026-02-04 (Phase 1 & 2 완료)
