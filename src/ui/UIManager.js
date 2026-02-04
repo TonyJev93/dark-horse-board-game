@@ -17,8 +17,11 @@ export class UIManager {
         this.gameEngine = gameEngine;
         this.eventBus = gameState.eventBus;
         this.messageBox = document.getElementById('message-box');
+        this.directionModal = null;
+        this.isGameStartShowing = false;
 
         this.setupEventListeners();
+        this.setupKeyboardShortcuts();
     }
 
     setupEventListeners() {
@@ -47,6 +50,54 @@ export class UIManager {
 
         this.eventBus.on('game:startMessage', ({ message }) => {
             this.showGameStartMessage(message);
+        });
+    }
+
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            if (this.gameState.turn !== 0 || this.gameState.isGameOver) return;
+
+            const key = e.key;
+
+            if (this.directionModal) {
+                if (key === '1') {
+                    const forwardBtn = this.directionModal.querySelector('[data-direction="forward"]');
+                    if (forwardBtn && !forwardBtn.disabled) forwardBtn.click();
+                } else if (key === '2') {
+                    const backwardBtn = this.directionModal.querySelector('[data-direction="backward"]');
+                    if (backwardBtn && !backwardBtn.disabled) backwardBtn.click();
+                } else if (key === '3') {
+                    const cancelBtn = this.directionModal.querySelector('.cancel-btn');
+                    if (cancelBtn) cancelBtn.click();
+                }
+            } else if (this.gameState.turnPhase === 'token' && !this.isGameStartShowing) {
+                const canTakeToken =
+                    this.gameState.tokensAvailable > 0 &&
+                    this.gameState.hands[0].length > 1 &&
+                    this.gameState.tokens[0] === 0;
+
+                if (key === '1') {
+                    const skipBtn = document.getElementById('modal-skip-token');
+                    if (skipBtn && !skipBtn.classList.contains('hidden')) {
+                        skipBtn.click();
+                    }
+                } else if (key === '2' && canTakeToken) {
+                    const getTokenBtn = document.getElementById('modal-get-token');
+                    if (getTokenBtn && !getTokenBtn.classList.contains('hidden')) {
+                        getTokenBtn.click();
+                    }
+                }
+            } else if (this.gameState.turnPhase === 'card') {
+                const cardIndex = parseInt(key) - 1;
+                const playerCards = this.gameState.hands[0];
+                if (cardIndex >= 0 && cardIndex < playerCards.length) {
+                    const card = playerCards[cardIndex];
+                    const cardEl = document.querySelector(`[data-card-id="${card.id}"]`);
+                    if (cardEl && !cardEl.classList.contains('disabled')) {
+                        cardEl.click();
+                    }
+                }
+            }
         });
     }
 
@@ -180,7 +231,7 @@ export class UIManager {
         const cardArea = document.getElementById('card-area');
         cardArea.innerHTML = '';
 
-        this.gameState.hands[0].forEach((card) => {
+        this.gameState.hands[0].forEach((card, index) => {
             const isDisabled =
                 this.gameState.turn !== 0 ||
                 this.gameState.turnPhase === 'token' ||
@@ -189,6 +240,10 @@ export class UIManager {
 
             const el = document.createElement('div');
             el.className = `card min-w-[140px] h-48 bg-white rounded-3xl shadow-2xl p-5 flex flex-col items-center justify-between text-black pointer-events-auto shrink-0 border-b-8 border-gray-200 ${isDisabled ? 'disabled' : ''}`;
+            el.setAttribute('data-card-id', card.id);
+
+            const shortcutNum = index + 1;
+            const shortcutBadge = !isDisabled ? `<div class="absolute top-2 left-2 w-5 h-5 bg-gray-800 text-white text-[10px] font-bold rounded-full flex items-center justify-center">${shortcutNum}</div>` : '';
 
             const icon =
                 card.type === 'forward'
@@ -198,14 +253,14 @@ export class UIManager {
                       : card.type === 'plus_minus'
                         ? '±'
                         : card.type === 'rider_fall_off'
-                          ? '💥'
+                          ? '💣'
                           : '🏇';
 
             const color =
                 card.type === 'forward'
-                    ? 'text-blue-600'
+                    ? 'text-red-600'
                     : card.type === 'backward'
-                      ? 'text-red-600'
+                      ? 'text-blue-600'
                       : card.type === 'plus_minus'
                         ? 'text-green-600'
                         : card.type === 'rider_fall_off'
@@ -217,13 +272,13 @@ export class UIManager {
                 : `${card.target}번 말`;
 
             const koreanType = {
-                'forward': '직진',
+                'forward': '전진',
                 'backward': '후진',
-                'plus_minus': '직진 or 후진',
+                'plus_minus': '전진 or 후진',
                 'rider_fall_off': '낙마'
             }[card.type] || card.type.replaceAll('_', ' ');
 
-            el.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
+            el.innerHTML = `${shortcutBadge}<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
 
             if (!isDisabled) {
                 if (card.type === 'plus_minus') {
@@ -265,7 +320,8 @@ export class UIManager {
         const showTokenPhase =
             this.gameState.turn === 0 &&
             this.gameState.turnPhase === 'token' &&
-            !this.gameState.isGameOver;
+            !this.gameState.isGameOver &&
+            !this.isGameStartShowing;
 
         const tokenModal = document.getElementById('token-modal');
         if (showTokenPhase) {
@@ -278,57 +334,62 @@ export class UIManager {
 
     showDirectionSelection(card) {
         const modal = document.createElement('div');
+        this.directionModal = modal;
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        
+
         const horseRank = this.gameState.horseOrder.indexOf(card.target);
-        const canGoForward = horseRank !== 6; // Not 1st place
-        const canGoBackward = horseRank !== 0; // Not last place
-        
+        const canGoForward = horseRank !== 6;
+        const canGoBackward = horseRank !== 0;
+
+        const forwardShortcut = !canGoForward ? '' : '<div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</div>';
+        const backwardShortcut = !canGoBackward ? '' : '<div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">2</div>';
+
         modal.innerHTML = `
             <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
                 <h3 class="text-xl font-bold text-center mb-4">방향 선택</h3>
-                <p class="text-center mb-6">${card.target}번 말 직진 혹은 후진</p>
+                <p class="text-center mb-6">${card.target}번 말 전진 혹은 후진</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <button 
-                        class="direction-btn bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    <button
+                        class="direction-btn relative bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                         data-direction="forward"
                         ${!canGoForward ? 'disabled' : ''}
                     >
+                        ${forwardShortcut}
                         <div class="text-2xl mb-1">▲</div>
                         <div>전진 (+${card.value})</div>
-                        ${!canGoForward ? '<div class="text-xs mt-1">1등이라 선택 불가</div>' : ''}
                     </button>
-                    <button 
-                        class="direction-btn bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    <button
+                        class="direction-btn relative bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                         data-direction="backward"
                         ${!canGoBackward ? 'disabled' : ''}
                     >
+                        ${backwardShortcut}
                         <div class="text-2xl mb-1">▼</div>
                         <div>후진 (-${card.value})</div>
-                        ${!canGoBackward ? '<div class="text-xs mt-1">꼴찌라 선택 불가</div>' : ''}
                     </button>
                 </div>
-                <button 
-                    class="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
-                    onclick="this.closest('.fixed').remove()"
+                <button
+                    class="cancel-btn relative mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
+                    onclick="this.closest('.fixed').remove(); if(window.game) window.game.uiManager.directionModal = null;"
                 >
+                    <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</div>
                     취소
                 </button>
             </div>
         `;
-        
-        // Add click handlers for direction buttons
+
         modal.querySelectorAll('.direction-btn').forEach(btn => {
             if (!btn.disabled) {
                 btn.onclick = () => {
                     const direction = btn.dataset.direction;
                     const cardWithDirection = { ...card, direction };
                     modal.remove();
+                    this.directionModal = null;
                     this.gameEngine.playCard(0, cardWithDirection.id, cardWithDirection);
                 };
             }
         });
-        
+
         document.body.appendChild(modal);
     }
 
@@ -357,6 +418,7 @@ export class UIManager {
     }
 
     showGameStartMessage(message) {
+        this.isGameStartShowing = true;
         const startMessageEl = document.createElement('div');
         startMessageEl.id = 'game-start-message';
         startMessageEl.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none';
@@ -365,11 +427,13 @@ export class UIManager {
                 ${message}
             </div>
         `;
-        
+
         document.body.appendChild(startMessageEl);
-        
+
         setTimeout(() => {
             startMessageEl.remove();
+            this.isGameStartShowing = false;
+            this.renderTokenModal();
         }, 2000);
     }
 }
