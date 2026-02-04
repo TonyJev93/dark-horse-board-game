@@ -71,10 +71,12 @@ export class UIManager {
         const playerAssigned = document.getElementById('player-assigned-horses');
         playerAssigned.innerHTML = '';
         this.gameState.bettings[0].forEach((id) => {
+            const isDarkHorse = id === this.gameState.darkHorseId;
+            const horseColor = isDarkHorse ? '000000' : HORSE_COLORS[id].toString(16).padStart(6, '0');
             const box = document.createElement('div');
             box.className =
                 'w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs border border-white/20 shadow-lg';
-            box.style.backgroundColor = `#${HORSE_COLORS[id].toString(16).padStart(6, '0')}`;
+            box.style.backgroundColor = `#${horseColor}`;
             box.innerText = id;
             playerAssigned.appendChild(box);
         });
@@ -88,10 +90,12 @@ export class UIManager {
             const aiHorses = document.getElementById(`ai-${i}-horses`);
             aiHorses.innerHTML = '';
             this.gameState.bettings[i].forEach((id) => {
+                const isDarkHorse = id === this.gameState.darkHorseId;
+                const horseColor = isDarkHorse ? '000000' : HORSE_COLORS[id].toString(16).padStart(6, '0');
                 const dot = document.createElement('div');
                 dot.className =
                     'w-4 h-4 rounded-md border border-white/10 flex items-center justify-center text-[8px] font-bold';
-                dot.style.backgroundColor = `#${HORSE_COLORS[id].toString(16).padStart(6, '0')}`;
+                dot.style.backgroundColor = `#${horseColor}`;
                 dot.innerText = id;
                 aiHorses.appendChild(dot);
             });
