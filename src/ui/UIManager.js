@@ -309,8 +309,8 @@ export class UIManager {
                     </button>
                 </div>
                 <button 
-                    type="button"
-                    class="cancel-btn mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
+                    class="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
+                    onclick="this.closest('.fixed').remove()"
                 >
                     취소
                 </button>
@@ -320,9 +320,7 @@ export class UIManager {
         // Add click handlers for direction buttons
         modal.querySelectorAll('.direction-btn').forEach(btn => {
             if (!btn.disabled) {
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                btn.onclick = () => {
                     const direction = btn.dataset.direction;
                     const cardWithDirection = { ...card, direction };
                     modal.remove();
@@ -330,16 +328,7 @@ export class UIManager {
                 };
             }
         });
-
-        const cancelBtn = modal.querySelector('.cancel-btn');
-        if (cancelBtn) {
-            cancelBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                modal.remove();
-            };
-        }
-
+        
         document.body.appendChild(modal);
     }
 

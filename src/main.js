@@ -48,6 +48,7 @@ class DarkHorseGame {
         const btnSkipToken = document.getElementById('btn-skip-token');
         const modalGetToken = document.getElementById('modal-get-token');
         const modalSkipToken = document.getElementById('modal-skip-token');
+        const restartBtn = document.getElementById('restart-game-btn');
 
         if (btnGetToken) {
             btnGetToken.onclick = () => this.gameEngine.takeDarkHorseToken(0);
@@ -60,6 +61,9 @@ class DarkHorseGame {
         }
         if (modalSkipToken) {
             modalSkipToken.onclick = () => this.gameEngine.skipToken(0);
+        }
+        if (restartBtn) {
+            restartBtn.onclick = () => location.reload();
         }
     }
 
