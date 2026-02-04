@@ -127,18 +127,20 @@
                     토큰 선택 후 카드를 제출해야 합니다
                 </p>
                 <div class="flex gap-4 justify-center">
-                <button
-                    id="modal-skip-token"
-                    class="bg-gray-600 hover:bg-gray-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110"
-                >
-                    패스
-                </button>
-                <button
-                    id="modal-get-token"
-                    class="bg-red-600 hover:bg-red-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110"
-                >
-                    토큰 가져오기
-                </button>
+                    <button
+                        id="modal-skip-token"
+                        class="relative bg-gray-600 hover:bg-gray-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110"
+                    >
+                        <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</div>
+                        패스
+                    </button>
+                    <button
+                        id="modal-get-token"
+                        class="relative bg-red-600 hover:bg-red-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110"
+                    >
+                        <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">2</div>
+                        토큰 가져오기
+                    </button>
                 </div>
             </div>
 
