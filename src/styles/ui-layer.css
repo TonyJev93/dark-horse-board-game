@@ -16,11 +16,18 @@
 .card {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    position: relative;
 }
 
 .card:not(.disabled):hover {
     transform: translateY(-15px) scale(1.05);
-    z-index: 50;
+    z-index: 1000;
+}
+
+/* Card area container - ensure hover cards are not clipped */
+#card-area {
+    position: relative;
+    padding-top: 20px; /* Add extra space on top for hover effect */
 }
 
 .card.disabled {
