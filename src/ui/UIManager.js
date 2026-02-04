@@ -63,7 +63,7 @@ export class UIManager {
         if (this.gameState.tokens[0] > 0) {
             const tokenIcon = document.createElement('div');
             tokenIcon.className =
-                'w-6 h-6 bg-red-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center';
+                'w-6 h-6 bg-black rounded-full border-2 border-white shadow-lg flex items-center justify-center';
             tokenIcon.innerHTML = '<span class="text-white text-[10px] font-black">DH</span>';
             playerTokenDisplay.appendChild(tokenIcon);
         }
@@ -104,8 +104,10 @@ export class UIManager {
             if (aiToken) {
                 if (this.gameState.tokens[i] > 0) {
                     aiToken.classList.remove('hidden');
+                    aiToken.innerHTML = '<span class="text-white text-[8px] font-black">DH</span>';
                 } else {
                     aiToken.classList.add('hidden');
+                    aiToken.innerHTML = '';
                 }
             }
 
@@ -149,7 +151,8 @@ export class UIManager {
 
             for (let i = 0; i < this.gameState.tokensAvailable; i++) {
                 const t = document.createElement('div');
-                t.className = 'w-5 h-5 bg-red-600 rounded-full border-2 border-white shadow-lg';
+                t.className = 'w-5 h-5 bg-black rounded-full border-2 border-white shadow-lg flex items-center justify-center';
+                t.innerHTML = '<span class="text-white text-[8px] font-black">DH</span>';
                 tokensRemainingDisplay.appendChild(t);
             }
         }
