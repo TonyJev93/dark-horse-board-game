@@ -41,53 +41,78 @@
 <body>
 
 <div id="ui-layer">
-    <div class="flex justify-between p-4 items-start">
-        <div class="space-y-4">
-            <!-- Player Status -->
-            <div id="player-status" class="text-white bg-black/60 p-4 rounded-2xl backdrop-blur-md border border-white/10 w-72 turn-indicator active-turn shadow-2xl">
-                <div class="flex justify-between items-center mb-2">
-                    <h1 class="text-lg font-bold">👤 Player (나)</h1>
+    <div class="absolute top-4 left-4 space-y-4">
+        <!-- Player Status -->
+        <div id="player-status" class="text-white bg-black/60 p-4 rounded-2xl backdrop-blur-md border border-white/10 w-72 turn-indicator active-turn shadow-2xl">
+            <div class="flex justify-between items-center mb-2">
+                <h1 class="text-lg font-bold">👤 Player (나)</h1>
+                <div class="flex items-center gap-2">
+                    <div id="player-token-display" class="flex gap-1"></div>
                     <span id="player-card-count" class="text-[10px] bg-blue-500 px-2 py-0.5 rounded-full font-bold">카드 6장</span>
                 </div>
-                <div class="flex gap-2 mb-2" id="player-assigned-horses">
-                    <!-- 내 할당 말 아이콘 표시 -->
-                </div>
-                <p id="game-status" class="text-xs text-blue-400 font-medium">당신의 차례입니다.</p>
             </div>
+            <div class="flex gap-2 mb-2" id="player-assigned-horses">
+                <!-- 내 할당 말 아이콘 표시 -->
+            </div>
+            <p id="game-status" class="text-xs text-blue-400 font-medium">당신의 차례입니다.</p>
+        </div>
 
-            <!-- AI Status & Assignments -->
-            <div class="flex gap-2">
-                <div id="ai-1" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
-                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 1</div>
-                    <div id="ai-1-horses" class="flex justify-center gap-1 mb-1"></div>
+        <!-- AI Status & Assignments -->
+        <div class="flex gap-2">
+            <div id="ai-1" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                <div class="text-[10px] opacity-50 mb-1 font-bold">AI 1</div>
+                <div id="ai-1-horses" class="flex justify-center gap-1 mb-1"></div>
+                <div class="flex justify-center items-center gap-1 mb-1">
+                    <div id="ai-1-token" class="hidden w-4 h-4 bg-red-600 rounded-full border border-white"></div>
                     <div class="text-[10px] font-bold text-blue-300" id="ai-1-cards">6장</div>
                 </div>
-                <div id="ai-2" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
-                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 2</div>
-                    <div id="ai-2-horses" class="flex justify-center gap-1 mb-1"></div>
+            </div>
+            <div id="ai-2" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                <div class="text-[10px] opacity-50 mb-1 font-bold">AI 2</div>
+                <div id="ai-2-horses" class="flex justify-center gap-1 mb-1"></div>
+                <div class="flex justify-center items-center gap-1 mb-1">
+                    <div id="ai-2-token" class="hidden w-4 h-4 bg-red-600 rounded-full border border-white"></div>
                     <div class="text-[10px] font-bold text-blue-300" id="ai-2-cards">6장</div>
                 </div>
-                <div id="ai-3" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
-                    <div class="text-[10px] opacity-50 mb-1 font-bold">AI 3</div>
-                    <div id="ai-3-horses" class="flex justify-center gap-1 mb-1"></div>
+            </div>
+            <div id="ai-3" class="text-white bg-black/40 p-3 rounded-xl border border-white/5 w-24 text-center turn-indicator">
+                <div class="text-[10px] opacity-50 mb-1 font-bold">AI 3</div>
+                <div id="ai-3-horses" class="flex justify-center gap-1 mb-1"></div>
+                <div class="flex justify-center items-center gap-1 mb-1">
+                    <div id="ai-3-token" class="hidden w-4 h-4 bg-red-600 rounded-full border border-white"></div>
                     <div class="text-[10px] font-bold text-blue-300" id="ai-3-cards">6장</div>
                 </div>
             </div>
         </div>
-
-        <div class="flex flex-col items-end gap-2">
-            <div class="bg-red-900/40 p-3 rounded-xl border border-red-500/20 backdrop-blur-md flex flex-col items-end shadow-lg">
-                <h2 class="text-[9px] font-black uppercase text-red-400 mb-1">DH Tokens</h2>
-                <div id="dark-horse-tokens" class="flex gap-1"></div>
-                <button id="btn-get-token" class="pointer-events-auto mt-2 bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold py-1.5 px-4 rounded-full transition-all hidden shadow-lg">
-                    토큰 가져오기 (턴 소모)
-                </button>
-            </div>
-        </div>
     </div>
+
+    <!-- Remaining Tokens Display -->
+    <div class="absolute top-4 right-80 bg-red-900/80 p-4 rounded-xl border-2 border-red-500/50 backdrop-blur-md flex flex-col items-center shadow-2xl min-w-[100px]">
+        <h2 class="text-xs font-black uppercase text-red-300 mb-2">남은 토큰</h2>
+        <div id="tokens-remaining-display" class="flex gap-1 mb-2 min-h-[20px]"></div>
+        <div class="text-white text-3xl font-black" id="tokens-remaining-count">2</div>
+    </div>
+
+    <!-- Hidden buttons for backward compatibility -->
+    <button id="btn-skip-token" class="hidden"></button>
+    <button id="btn-get-token" class="hidden"></button>
 
     <div id="message-box" class="bg-white/95 text-black px-10 py-5 rounded-2xl font-black text-3xl shadow-2xl backdrop-blur-md border border-gray-200 text-center">
         MESSAGE
+    </div>
+
+    <!-- Token Selection Modal -->
+    <div id="token-modal" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-xl p-10 rounded-3xl border-4 border-red-500/50 shadow-2xl pointer-events-auto hidden z-50">
+        <h2 class="text-white text-4xl font-black mb-6 text-center">다크호스 토큰을 가져갈까요?</h2>
+        <p class="text-white/70 text-sm mb-8 text-center">토큰 선택 후 카드를 제출해야 합니다</p>
+        <div class="flex gap-4 justify-center">
+            <button id="modal-skip-token" class="bg-gray-600 hover:bg-gray-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110">
+                패스
+            </button>
+            <button id="modal-get-token" class="bg-red-600 hover:bg-red-500 text-white text-xl font-bold py-4 px-12 rounded-full transition-all shadow-lg transform hover:scale-110">
+                토큰 가져오기
+            </button>
+        </div>
     </div>
 
     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 pointer-events-auto w-full max-w-5xl">
@@ -127,7 +152,9 @@
         tokens: [0, 0, 0, 0],
         isAnimating: false,
         isGameOver: false,
-        rankPoints: [0, 1, 2, 3, 5, 7, 10]
+        rankPoints: [0, 1, 2, 3, 5, 7, 10],
+        // Turn phase: 'token' = deciding whether to take token, 'card' = playing card
+        turnPhase: 'token'
     };
 
     let scene, camera, renderer, horses = {};
@@ -213,9 +240,18 @@
         }
 
         createHorses();
-        renderUI();
-
-        document.getElementById('btn-get-token').onclick = takeDarkHorseToken;
+        
+        const btnGetToken = document.getElementById('btn-get-token');
+        const btnSkipToken = document.getElementById('btn-skip-token');
+        const modalGetToken = document.getElementById('modal-get-token');
+        const modalSkipToken = document.getElementById('modal-skip-token');
+        
+        if (btnGetToken) btnGetToken.onclick = takeDarkHorseToken;
+        if (btnSkipToken) btnSkipToken.onclick = skipToken;
+        if (modalGetToken) modalGetToken.onclick = takeDarkHorseToken;
+        if (modalSkipToken) modalSkipToken.onclick = skipToken;
+        
+        startPlayerTurn();
         animate();
 
         // Interaction
@@ -356,18 +392,33 @@
 
     function takeDarkHorseToken() {
         // GAME_RULES.md: Cannot take token when you have only 1 action card remaining in hand
-        if (GameState.turn !== 0 || GameState.tokensAvailable <= 0 || GameState.isAnimating || GameState.hands[0].length <= 1) {
+        if (GameState.turn !== 0 || GameState.turnPhase !== 'token' || GameState.tokensAvailable <= 0 || GameState.isAnimating || GameState.hands[0].length <= 1) {
             if (GameState.hands[0].length <= 1) showMessage("카드가 1장 이하일 때는 토큰을 가져올 수 없습니다!", true);
             return;
         }
         GameState.tokens[0]++;
         GameState.tokensAvailable--;
-        showMessage("다크호스 토큰 획득!", true);
-        endTurn();
+        showMessage("다크호스 토큰 획득! 카드를 제출하세요.", true);
+        
+        // GAME_RULES.md: Taking token is Action 1 (Optional), must still play card (Action 2)
+        GameState.turnPhase = 'card';
+        renderUI();
+    }
+    
+    function skipToken() {
+        if (GameState.turn !== 0 || GameState.turnPhase !== 'token') return;
+        
+        showMessage("토큰 패스! 카드를 제출하세요.", true);
+        GameState.turnPhase = 'card';
+        renderUI();
     }
 
     async function playCard(playerIdx, cardId) {
         if (GameState.isAnimating || GameState.turn !== playerIdx) return;
+        
+        // Player can only play card during 'card' phase
+        if (playerIdx === 0 && GameState.turnPhase !== 'card') return;
+        
         const hand = GameState.hands[playerIdx];
         const cardIdx = hand.findIndex(c => c.id === cardId);
         const card = hand[cardIdx];
@@ -434,8 +485,34 @@
             if(++safetyCounter > 4) { finishGame(); return; }
         }
         GameState.turn = nextTurn;
+        
+        // GAME_RULES.md: Each turn starts with optional token phase
+        GameState.turnPhase = 'token';
         renderUI();
-        if (GameState.turn !== 0) setTimeout(aiTurn, 1000);
+        
+        if (GameState.turn !== 0) {
+            setTimeout(aiTurn, 1000);
+        } else {
+            // Player turn - check if token phase should be skipped
+            startPlayerTurn();
+        }
+    }
+    
+    function startPlayerTurn() {
+        // Check if player can participate in token phase
+        const hasTokensAvailable = GameState.tokensAvailable > 0;
+        const hasEnoughCards = GameState.hands[0].length > 1;
+        const alreadyHasToken = GameState.tokens[0] > 0;
+        
+        // Show token phase only if tokens available AND player doesn't have one yet AND has enough cards
+        if (hasTokensAvailable && !alreadyHasToken && hasEnoughCards) {
+            GameState.turnPhase = 'token';
+            renderUI();
+        } else {
+            // Skip token phase - go directly to card phase (no notifications)
+            GameState.turnPhase = 'card';
+            renderUI();
+        }
     }
 
     function aiTurn() {
@@ -446,7 +523,13 @@
         if (GameState.tokensAvailable > 0 && hand.length > 1 && Math.random() < 0.2) {
             GameState.tokens[aiIdx]++; GameState.tokensAvailable--;
             showMessage(`AI ${aiIdx}: 토큰 선점!`, false);
-            endTurn();
+            renderUI();
+            // GAME_RULES.md: Taking token is Action 1 (Optional), must still play card (Action 2)
+            setTimeout(() => {
+                if (hand.length > 0) {
+                    playCard(aiIdx, hand[Math.floor(Math.random() * hand.length)].id);
+                }
+            }, 500);
         } else if (hand.length > 0) {
             playCard(aiIdx, hand[Math.floor(Math.random() * hand.length)].id);
         } else endTurn();
@@ -525,6 +608,16 @@
     }
 
     function renderUI() {
+        // Update player token display
+        const playerTokenDisplay = document.getElementById('player-token-display');
+        playerTokenDisplay.innerHTML = '';
+        if (GameState.tokens[0] > 0) {
+            const tokenIcon = document.createElement('div');
+            tokenIcon.className = "w-6 h-6 bg-red-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center";
+            tokenIcon.innerHTML = '<span class="text-white text-[10px] font-black">DH</span>';
+            playerTokenDisplay.appendChild(tokenIcon);
+        }
+        
         const playerAssigned = document.getElementById('player-assigned-horses');
         playerAssigned.innerHTML = '';
         GameState.bettings[0].forEach(id => {
@@ -545,6 +638,17 @@
                 dot.innerText = id;
                 aiHorses.appendChild(dot);
             });
+            
+            // Update AI token display
+            const aiToken = document.getElementById(`ai-${i}-token`);
+            if (aiToken) {
+                if (GameState.tokens[i] > 0) {
+                    aiToken.classList.remove('hidden');
+                } else {
+                    aiToken.classList.add('hidden');
+                }
+            }
+            
             document.getElementById(`ai-${i}-cards`).innerText = `${GameState.hands[i].length}장`;
         }
 
@@ -565,12 +669,18 @@
             rankContainer.appendChild(div);
         });
 
-        const tokenContainer = document.getElementById('dark-horse-tokens');
-        tokenContainer.innerHTML = '';
-        for(let i=0; i<GameState.tokens[0]; i++) {
-            const t = document.createElement('div');
-            t.className = "w-5 h-5 bg-red-600 rounded-full border-2 border-white shadow-lg animate-bounce";
-            tokenContainer.appendChild(t);
+        // Update remaining tokens display
+        const tokensRemainingDisplay = document.getElementById('tokens-remaining-display');
+        const tokensRemainingCount = document.getElementById('tokens-remaining-count');
+        if (tokensRemainingDisplay && tokensRemainingCount) {
+            tokensRemainingDisplay.innerHTML = '';
+            tokensRemainingCount.innerText = GameState.tokensAvailable;
+            
+            for(let i=0; i<GameState.tokensAvailable; i++) {
+                const t = document.createElement('div');
+                t.className = "w-5 h-5 bg-red-600 rounded-full border-2 border-white shadow-lg";
+                tokensRemainingDisplay.appendChild(t);
+            }
         }
 
         document.querySelectorAll('.turn-indicator').forEach(el => el.classList.remove('active-turn'));
@@ -582,7 +692,8 @@
         const cardArea = document.getElementById('card-area');
         cardArea.innerHTML = '';
         GameState.hands[0].forEach((card) => {
-            const isDisabled = GameState.turn !== 0 || GameState.isAnimating || GameState.isGameOver;
+            // Disable cards during token phase or when not player's turn
+            const isDisabled = GameState.turn !== 0 || GameState.turnPhase === 'token' || GameState.isAnimating || GameState.isGameOver;
             const el = document.createElement('div');
             el.className = `card min-w-[140px] h-48 bg-white rounded-3xl shadow-2xl p-5 flex flex-col items-center justify-between text-black pointer-events-auto shrink-0 border-b-8 border-gray-200 ${isDisabled ? 'disabled' : ''}`;
             let icon = card.type === 'forward' ? '▲' : (card.type === 'backward' ? '▼' : (card.type === 'swap' ? '🔄' : (card.type === 'rider_fall_off' ? '💥' : '🏇')));
@@ -593,8 +704,48 @@
             cardArea.appendChild(el);
         });
 
+        // Update game status message
+        const gameStatus = document.getElementById('game-status');
+        if (GameState.isGameOver) {
+            gameStatus.innerText = '경주가 종료되었습니다!';
+        } else if (GameState.turn === 0) {
+            if (GameState.turnPhase === 'token') {
+                gameStatus.innerText = '다크호스 토큰을 가져갈까요?';
+            } else {
+                gameStatus.innerText = '카드를 선택하세요.';
+            }
+        } else {
+            gameStatus.innerText = `AI ${GameState.turn}의 차례입니다.`;
+        }
+
         // GAME_RULES.md: Cannot take token when you have only 1 action card remaining
-        document.getElementById('btn-get-token').classList.toggle('hidden', GameState.turn !== 0 || GameState.tokensAvailable <= 0 || GameState.isGameOver || GameState.hands[0].length <= 1);
+        const canTakeToken = GameState.turn === 0 && 
+                           GameState.turnPhase === 'token' && 
+                           GameState.tokensAvailable > 0 && 
+                           !GameState.isGameOver && 
+                           GameState.hands[0].length > 1 &&
+                           GameState.tokens[0] === 0;
+        
+        // Show token phase buttons during token phase
+        const showTokenPhase = GameState.turn === 0 && 
+                              GameState.turnPhase === 'token' && 
+                              !GameState.isGameOver;
+        
+        // Control token selection modal
+        const tokenModal = document.getElementById('token-modal');
+        if (showTokenPhase) {
+            tokenModal.classList.remove('hidden');
+            // Hide or show "get token" button based on eligibility
+            document.getElementById('modal-get-token').classList.toggle('hidden', !canTakeToken);
+        } else {
+            tokenModal.classList.add('hidden');
+        }
+        
+        const btnGetToken = document.getElementById('btn-get-token');
+        const btnSkipToken = document.getElementById('btn-skip-token');
+        if (btnGetToken) btnGetToken.classList.toggle('hidden', !canTakeToken);
+        if (btnSkipToken) btnSkipToken.classList.toggle('hidden', !showTokenPhase);
+        
         document.getElementById('player-card-count').innerText = `카드 ${GameState.hands[0].length}장`;
         document.getElementById('dark-horse-info').innerText = `DH: #${GameState.darkHorseId}`;
     }
