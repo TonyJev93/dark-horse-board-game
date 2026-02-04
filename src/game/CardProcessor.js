@@ -15,7 +15,7 @@ export class CardProcessor {
     static processCard(card, horseOrder, playerName) {
         const newOrder = [...horseOrder];
         let message = '';
-        const horseId = card.target || horseOrder[Math.floor(Math.random() * 7)];
+        const horseId = card.target;
         const currentRank = newOrder.indexOf(horseId);
 
         if (card.type === 'rider_fall_off') {

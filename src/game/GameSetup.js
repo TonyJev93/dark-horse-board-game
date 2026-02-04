@@ -26,9 +26,9 @@ export class GameSetup {
                     ? Math.floor(Math.random() * 2) + 1
                     : null;
             const target =
-                Math.random() > 0.4 && type !== 'rider_fall_off'
-                    ? Math.floor(Math.random() * 7) + 1
-                    : null;
+                type === 'rider_fall_off'
+                    ? null
+                    : Math.floor(Math.random() * 7) + 1;
             allActionCards.push({ id: i, type, value, target });
         }
         return allActionCards;
