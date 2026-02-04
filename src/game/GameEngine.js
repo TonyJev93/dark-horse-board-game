@@ -45,6 +45,18 @@ export class GameEngine {
             darkHorseId: this.gameState.darkHorseId,
             horseOrder: this.gameState.horseOrder,
         });
+        
+        // Show game start message
+        this.showGameStartMessage();
+        
+        // Start the first turn based on who is first
+        if (this.gameState.turn !== 0) {
+            // AI goes first
+            setTimeout(() => this.aiTurn(), 2000);
+        } else {
+            // Player goes first
+            setTimeout(() => this.startPlayerTurn(), 2000);
+        }
     }
 
     async playCard(playerIdx, cardId) {
@@ -217,6 +229,12 @@ export class GameEngine {
 
         this.eventBus.emit('game:finished', {
             results,
+        });
+    }
+
+    showGameStartMessage() {
+        this.eventBus.emit('game:startMessage', {
+            message: '게임 시작!!!'
         });
     }
 }

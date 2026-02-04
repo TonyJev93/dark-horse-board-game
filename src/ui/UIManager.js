@@ -44,6 +44,10 @@ export class UIManager {
         this.eventBus.on('game:finished', ({ results }) => {
             this.showResults(results);
         });
+
+        this.eventBus.on('game:startMessage', ({ message }) => {
+            this.showGameStartMessage(message);
+        });
     }
 
     render() {
@@ -290,5 +294,22 @@ export class UIManager {
         });
 
         modal.classList.add('show-result');
+    }
+
+    showGameStartMessage(message) {
+        const startMessageEl = document.createElement('div');
+        startMessageEl.id = 'game-start-message';
+        startMessageEl.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none';
+        startMessageEl.innerHTML = `
+            <div class="text-white text-8xl font-black animate-pulse drop-shadow-2xl transform scale-110">
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(startMessageEl);
+        
+        setTimeout(() => {
+            startMessageEl.remove();
+        }, 2000);
     }
 }
