@@ -287,7 +287,7 @@ export class UIManager {
         modal.innerHTML = `
             <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
                 <h3 class="text-xl font-bold text-center mb-4">방향 선택</h3>
-                <p class="text-center mb-6">${card.target}번 말 ±${card.value}</p>
+                <p class="text-center mb-6">${card.target}번 말 직진 혹은 후진</p>
                 <div class="grid grid-cols-2 gap-4">
                     <button 
                         class="direction-btn bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
@@ -309,6 +309,7 @@ export class UIManager {
                     </button>
                 </div>
                 <button 
+                    type="button"
                     class="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
                     onclick="this.closest('.fixed').remove()"
                 >
