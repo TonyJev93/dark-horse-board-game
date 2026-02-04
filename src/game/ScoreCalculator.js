@@ -1,0 +1,47 @@
+export class ScoreCalculator {
+    static calculateScores(gameState) {
+        const results = [];
+        const dhInTop3 = gameState.horseOrder.slice(4).includes(gameState.darkHorseId);
+
+        for(let i = 0; i < gameState.playerCount; i++) {
+            let score = 0;
+            let bettingInfo = "";
+            
+            const bettingCounts = {};
+            gameState.bettings[i].forEach(id => {
+                bettingCounts[id] = (bettingCounts[id] || 0) + 1;
+            });
+
+            gameState.bettings[i].forEach(id => {
+                const rankIdx = gameState.horseOrder.indexOf(id);
+                const pts = gameState.rankPoints[rankIdx];
+                
+                if (bettingCounts[id] === 2) {
+                    if (!bettingInfo.includes(`#${id}`)) {
+                        const doublePoints = pts * 2;
+                        score += doublePoints;
+                        bettingInfo += ` #${id}×2(${doublePoints}점)`;
+                    }
+                } else {
+                    score += pts;
+                    bettingInfo += ` #${id}(${pts}점)`;
+                }
+            });
+
+            const tokenCount = gameState.tokens[i];
+            const tokenBonus = dhInTop3 ? (tokenCount * 5) : (tokenCount * -3);
+            score += tokenBonus;
+            
+            results.push({ 
+                name: i === 0 ? "Player (나)" : `AI 플레이어 ${i}`, 
+                score, 
+                tokenBonus, 
+                bettingInfo, 
+                isPlayer: i === 0 
+            });
+        }
+
+        results.sort((a, b) => b.score - a.score);
+        return results;
+    }
+}
