@@ -7,10 +7,29 @@ export class GameEngine {
         this.gameState = gameState;
         this.sceneManager = sceneManager;
         this.uiManager = uiManager;
+        this.eventBus = gameState.eventBus;
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.eventBus.on('state:horseOrder', ({ newValue }) => {
+            this.sceneManager.updateHorsePositions(newValue);
+        });
+        
+        this.eventBus.on('state:isAnimating', ({ newValue }) => {
+            if (!newValue) {
+                this.eventBus.emit('animation:completed', {});
+            }
+        });
     }
 
     init() {
         GameSetup.initializeGame(this.gameState);
+        this.eventBus.emit('game:initialized', {
+            darkHorseId: this.gameState.darkHorseId,
+            horseOrder: this.gameState.horseOrder
+        });
     }
 
     async playCard(playerIdx, cardId) {
@@ -31,9 +50,13 @@ export class GameEngine {
         const result = CardProcessor.processCard(card, this.gameState.horseOrder, playerName);
         
         this.gameState.horseOrder = result.newOrder;
-        this.uiManager.showMessage(result.message, playerIdx === 0);
-        this.sceneManager.updateHorsePositions(this.gameState.horseOrder);
-        this.uiManager.render();
+        
+        this.eventBus.emit('game:cardPlayed', {
+            playerIdx,
+            card,
+            message: result.message,
+            isPlayer: playerIdx === 0
+        });
         
         setTimeout(() => { 
             this.gameState.isAnimating = false; 
@@ -53,9 +76,12 @@ export class GameEngine {
         }
 
         this.gameState.takeToken(playerIdx);
-        this.uiManager.showMessage("다크호스 토큰 획득! 카드를 제출하세요.", playerIdx === 0);
         this.gameState.turnPhase = 'card';
-        this.uiManager.render();
+        
+        this.eventBus.emit('game:tokenTaken', {
+            playerIdx,
+            isPlayer: playerIdx === 0
+        });
     }
 
     skipToken(playerIdx) {
@@ -63,9 +89,12 @@ export class GameEngine {
             return;
         }
         
-        this.uiManager.showMessage("토큰 패스! 카드를 제출하세요.", playerIdx === 0);
         this.gameState.turnPhase = 'card';
-        this.uiManager.render();
+        
+        this.eventBus.emit('game:tokenSkipped', {
+            playerIdx,
+            isPlayer: playerIdx === 0
+        });
     }
 
     endTurn() {
@@ -91,7 +120,11 @@ export class GameEngine {
         
         this.gameState.turn = nextTurn;
         this.gameState.turnPhase = 'token';
-        this.uiManager.render();
+        
+        this.eventBus.emit('game:turnChanged', {
+            turn: nextTurn,
+            phase: 'token'
+        });
         
         if (this.gameState.turn !== 0) {
             setTimeout(() => this.aiTurn(), 1000);
@@ -107,11 +140,13 @@ export class GameEngine {
         
         if (hasTokensAvailable && !alreadyHasToken && hasEnoughCards) {
             this.gameState.turnPhase = 'token';
-            this.uiManager.render();
         } else {
             this.gameState.turnPhase = 'card';
-            this.uiManager.render();
         }
+        
+        this.eventBus.emit('game:playerTurnStarted', {
+            phase: this.gameState.turnPhase
+        });
     }
 
     aiTurn() {
@@ -122,9 +157,11 @@ export class GameEngine {
         
         if (this.gameState.tokensAvailable > 0 && hand.length > 1 && Math.random() < 0.2) {
             this.gameState.takeToken(aiIdx);
-            this.gameState.tokensAvailable--;
-            this.uiManager.showMessage(`AI ${aiIdx}: 토큰 선점!`, false);
-            this.uiManager.render();
+            
+            this.eventBus.emit('game:tokenTaken', {
+                playerIdx: aiIdx,
+                isPlayer: false
+            });
             
             setTimeout(() => {
                 if (hand.length > 0) {
@@ -142,7 +179,10 @@ export class GameEngine {
         if (this.gameState.isGameOver) return;
         
         this.gameState.isGameOver = true;
-        this.uiManager.render();
+        
+        this.eventBus.emit('game:finishing', {
+            winnerId
+        });
         
         const winnerId = this.gameState.horseOrder[6];
         this.sceneManager.animateCamera(winnerId, () => {
@@ -152,6 +192,9 @@ export class GameEngine {
 
     showResultModal() {
         const results = ScoreCalculator.calculateScores(this.gameState);
-        this.uiManager.showResults(results);
+        
+        this.eventBus.emit('game:finished', {
+            results
+        });
     }
 }

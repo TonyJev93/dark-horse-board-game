@@ -4,7 +4,33 @@ export class UIManager {
     constructor(gameState, gameEngine) {
         this.gameState = gameState;
         this.gameEngine = gameEngine;
+        this.eventBus = gameState.eventBus;
         this.messageBox = document.getElementById('message-box');
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.eventBus.on('state:changed', () => {
+            this.render();
+        });
+        
+        this.eventBus.on('game:cardPlayed', ({ message, isPlayer }) => {
+            this.showMessage(message, isPlayer);
+        });
+        
+        this.eventBus.on('game:tokenTaken', ({ isPlayer }) => {
+            const msg = isPlayer ? "다크호스 토큰 획득! 카드를 제출하세요." : `AI ${this.gameState.turn}: 토큰 선점!`;
+            this.showMessage(msg, isPlayer);
+        });
+        
+        this.eventBus.on('game:tokenSkipped', ({ isPlayer }) => {
+            this.showMessage("토큰 패스! 카드를 제출하세요.", isPlayer);
+        });
+        
+        this.eventBus.on('game:finished', ({ results }) => {
+            this.showResults(results);
+        });
     }
 
     render() {
