@@ -1,19 +1,7 @@
 import { HORSE_COLORS } from '../core/GameConfig.js';
 
-/**
- * Factory for creating 3D horse models using Three.js
- *
- * @class HorseModel
- */
 export class HorseModel {
-    /**
-     * Create a 3D horse model
-     * @param {number} id - Horse ID (1-7)
-     * @param {boolean} isMyHorse - Is this the player's assigned horse
-     * @param {boolean} isDarkHorse - Is this the dark horse
-     * @returns {THREE.Group} Horse mesh group
-     */
-    static createHorse(id, isMyHorse, isDarkHorse) {
+    static createHorse(id, isMyHorse, isDarkHorse, hasToken) {
         const group = new THREE.Group();
         const color = isDarkHorse ? 0x000000 : HORSE_COLORS[id];
         const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 });
@@ -61,18 +49,19 @@ export class HorseModel {
         canvas.height = 128;
         const ctx = canvas.getContext('2d');
 
-        if (isMyHorse) {
-            ctx.fillStyle = '#38bdf8';
-        } else if (isDarkHorse) {
-            ctx.fillStyle = '#dc2626';
-        } else {
-            ctx.fillStyle = '#ffffff';
-        }
-
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(64, 64, 60, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = isMyHorse || isDarkHorse ? 'white' : 'black';
+
+        if (isDarkHorse) {
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(64, 64, 60, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = isDarkHorse ? 'white' : 'black';
         ctx.font = 'bold 80px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -87,7 +76,37 @@ export class HorseModel {
         sprite.scale.set(1.5, 1.5, 1);
         group.add(sprite);
 
-        group.userData = { legs, id };
+        if (isMyHorse || isDarkHorse) {
+            const arrowGroup = new THREE.Group();
+            let arrowColor;
+            let isTransparent = false;
+            
+            if (hasToken) {
+                arrowColor = 0x000000;
+            } else if (isMyHorse) {
+                arrowColor = 0xff0000;
+            } else {
+                arrowColor = 0x000000;
+                isTransparent = true;
+            }
+            
+            const arrowMat = new THREE.MeshBasicMaterial({
+                color: arrowColor,
+                side: THREE.DoubleSide,
+                transparent: isTransparent,
+                opacity: isTransparent ? 0.3 : 1.0
+            });
+            const arrowGeo = new THREE.ConeGeometry(0.5, 1.0, 3);
+            const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+            arrow.rotation.x = Math.PI;
+            arrow.position.y = 0;
+            arrowGroup.add(arrow);
+            arrowGroup.position.set(0, 5.8, 0);
+            arrowGroup.userData = { isArrowIndicator: true, arrowMesh: arrow, isDarkHorse };
+            group.add(arrowGroup);
+        }
+
+        group.userData = { legs, id, isMyHorse };
         return group;
     }
 }

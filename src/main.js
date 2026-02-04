@@ -33,10 +33,11 @@ class DarkHorseGame {
     }
 
     createHorses() {
+        const hasToken = this.gameState.tokens[0] > 0;
         this.gameState.horseIds.forEach((id) => {
             const isMyHorse = this.gameState.bettings[0].includes(id);
             const isDarkHorse = id === this.gameState.darkHorseId;
-            const horse = HorseModel.createHorse(id, isMyHorse, isDarkHorse);
+            const horse = HorseModel.createHorse(id, isMyHorse, isDarkHorse, hasToken);
             this.sceneManager.addHorse(id, horse);
         });
 
@@ -65,6 +66,13 @@ class DarkHorseGame {
         if (restartBtn) {
             restartBtn.onclick = () => location.reload();
         }
+
+        this.gameState.eventBus.on('game:tokenTaken', ({ isPlayer }) => {
+            if (isPlayer) {
+                const darkHorseId = this.gameState.darkHorseId;
+                this.sceneManager.updateArrowColorToBlack(darkHorseId);
+            }
+        });
     }
 
     startAnimationLoop() {

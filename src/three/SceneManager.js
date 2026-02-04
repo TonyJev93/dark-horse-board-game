@@ -158,6 +158,12 @@ export class SceneManager {
         Object.values(this.horses).forEach((horse) => {
             const { legs, targetPos } = horse.userData;
 
+            horse.children.forEach((child) => {
+                if (child.userData.isArrowIndicator) {
+                    child.rotation.y = Math.sin(time * 2) * 0.3;
+                }
+            });
+
             if (targetPos) {
                 horse.position.lerp(targetPos, 0.05);
                 const distZ = Math.abs(horse.position.z - targetPos.z);
@@ -210,5 +216,21 @@ export class SceneManager {
             }
         };
         animate();
+    }
+
+    updateArrowColorToBlack(horseId) {
+        const horse = this.horses[horseId];
+        if (!horse) return;
+
+        horse.children.forEach((child) => {
+            if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
+                const arrowMesh = child.userData.arrowMesh;
+                if (arrowMesh.material) {
+                    arrowMesh.material.color.setHex(0x000000);
+                    arrowMesh.material.transparent = false;
+                    arrowMesh.material.opacity = 1.0;
+                }
+            }
+        });
     }
 }
