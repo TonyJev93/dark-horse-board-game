@@ -55,9 +55,20 @@ export class UIManager {
 
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            if (this.gameState.turn !== 0 || this.gameState.isGameOver) return;
-
             const key = e.key;
+
+            if (this.gameState.isGameOver) {
+                if (key === 'Enter' || key === ' ') {
+                    const restartBtn = document.getElementById('restart-game-btn');
+                    if (restartBtn) {
+                        e.preventDefault();
+                        restartBtn.click();
+                    }
+                }
+                return;
+            }
+
+            if (this.gameState.turn !== 0) return;
 
             if (this.directionModal) {
                 if (key === '1') {
