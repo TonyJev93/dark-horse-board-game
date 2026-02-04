@@ -18,7 +18,7 @@ export class GameState {
     constructor() {
         this.eventBus = new EventBus();
         this._state = {
-            turn: 0,
+            turn: Math.floor(Math.random() * PLAYER_COUNT),
             playerCount: PLAYER_COUNT,
             horseIds: Array.from({ length: HORSE_COUNT }, (_, i) => i + 1),
             horseOrder: [],
