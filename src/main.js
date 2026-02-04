@@ -85,6 +85,6 @@ class DarkHorseGame {
 }
 
 window.addEventListener('load', () => {
-    const game = new DarkHorseGame();
-    game.init();
+    window.game = new DarkHorseGame();
+    window.game.init();
 });
