@@ -45,10 +45,29 @@ export class CardProcessor {
             const newRank = Math.max(0, Math.min(6, currentRank - moveValue));
             newOrder.splice(currentRank, 1);
             newOrder.splice(newRank, 0, horseId);
-        } else if (card.type === 'swap') {
-            const idx = Math.min(5, Math.max(0, currentRank));
-            [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
-            message = `${playerName}: 순위 탈환!`;
+        } else if (card.type === 'plus_minus') {
+            const moveValue = card.value || 1;
+            let direction = card.direction || 'forward'; // default to forward
+            
+            // Apply rank-based restrictions
+            if (currentRank === 6) { // 1st place
+                direction = 'backward';
+                message = `${playerName}: ${horseId}번 말 1등이라 후진만 가능!`;
+            } else if (currentRank === 0) { // 7th place (last)
+                direction = 'forward';
+                message = `${playerName}: ${horseId}번 말 꼴찌라 전진만 가능!`;
+            } else {
+                message = `${playerName}: ${horseId}번 말 ${direction === 'forward' ? '전진' : '후진'}!`;
+            }
+            
+            const actualMoveValue = direction === 'forward' ? moveValue : -moveValue;
+            let newRank = currentRank + actualMoveValue;
+            
+            // Apply boundary limits
+            newRank = Math.max(0, Math.min(6, newRank));
+            
+            newOrder.splice(currentRank, 1);
+            newOrder.splice(newRank, 0, horseId);
         }
 
         return { newOrder, message };

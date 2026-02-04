@@ -22,7 +22,7 @@ export class GameSetup {
         for (let i = 0; i < TOTAL_ACTION_CARDS; i++) {
             const type = CARD_TYPES[Math.floor(Math.random() * CARD_TYPES.length)];
             const value =
-                type === 'forward' || type === 'backward'
+                type === 'forward' || type === 'backward' || type === 'plus_minus'
                     ? Math.floor(Math.random() * 2) + 1
                     : null;
             const target =

@@ -59,7 +59,7 @@ export class GameEngine {
         }
     }
 
-    async playCard(playerIdx, cardId) {
+    async playCard(playerIdx, cardId, cardData = null) {
         if (this.gameState.isAnimating || this.gameState.turn !== playerIdx) {
             return;
         }
@@ -71,10 +71,13 @@ export class GameEngine {
         const card = this.gameState.removeCard(playerIdx, cardId);
         if (!card) return;
 
+        // For plus_minus cards, use the card data with direction
+        const processedCard = card.type === 'plus_minus' && cardData ? { ...card, ...cardData } : card;
+
         this.gameState.isAnimating = true;
 
         const playerName = playerIdx === 0 ? '나' : `AI ${playerIdx}`;
-        const result = CardProcessor.processCard(card, this.gameState.horseOrder, playerName);
+        const result = CardProcessor.processCard(processedCard, this.gameState.horseOrder, playerName);
 
         this.gameState.horseOrder = result.newOrder;
 

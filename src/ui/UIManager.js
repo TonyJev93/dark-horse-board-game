@@ -195,8 +195,8 @@ export class UIManager {
                     ? '▲'
                     : card.type === 'backward'
                       ? '▼'
-                      : card.type === 'swap'
-                        ? '🔄'
+                      : card.type === 'plus_minus'
+                        ? '±'
                         : card.type === 'rider_fall_off'
                           ? '💥'
                           : '🏇';
@@ -206,9 +206,11 @@ export class UIManager {
                     ? 'text-blue-600'
                     : card.type === 'backward'
                       ? 'text-red-600'
-                      : card.type === 'rider_fall_off'
-                        ? 'text-orange-600'
-                        : 'text-purple-600';
+                      : card.type === 'plus_minus'
+                        ? 'text-green-600'
+                        : card.type === 'rider_fall_off'
+                          ? 'text-orange-600'
+                          : 'text-purple-600';
 
             const description = card.target
                 ? `${card.target}번 말`
@@ -219,14 +221,18 @@ export class UIManager {
             const koreanType = {
                 'forward': '직진',
                 'backward': '후진',
-                'swap': '교환',
+                'plus_minus': '직진/후진',
                 'rider_fall_off': '낙마'
             }[card.type] || card.type.replaceAll('_', ' ');
 
             el.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
 
             if (!isDisabled) {
-                el.onclick = () => this.gameEngine.playCard(0, card.id);
+                if (card.type === 'plus_minus') {
+                    el.onclick = () => this.showDirectionSelection(card);
+                } else {
+                    el.onclick = () => this.gameEngine.playCard(0, card.id);
+                }
             }
 
             cardArea.appendChild(el);
@@ -270,6 +276,62 @@ export class UIManager {
         } else {
             tokenModal.classList.add('hidden');
         }
+    }
+
+    showDirectionSelection(card) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        
+        const horseRank = this.gameState.horseOrder.indexOf(card.target);
+        const canGoForward = horseRank !== 6; // Not 1st place
+        const canGoBackward = horseRank !== 0; // Not last place
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+                <h3 class="text-xl font-bold text-center mb-4">방향 선택</h3>
+                <p class="text-center mb-6">${card.target}번 말 ±${card.value}</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <button 
+                        class="direction-btn bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        data-direction="forward"
+                        ${!canGoForward ? 'disabled' : ''}
+                    >
+                        <div class="text-2xl mb-1">▲</div>
+                        <div>전진 (+${card.value})</div>
+                        ${!canGoForward ? '<div class="text-xs mt-1">1등이라 선택 불가</div>' : ''}
+                    </button>
+                    <button 
+                        class="direction-btn bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        data-direction="backward"
+                        ${!canGoBackward ? 'disabled' : ''}
+                    >
+                        <div class="text-2xl mb-1">▼</div>
+                        <div>후진 (-${card.value})</div>
+                        ${!canGoBackward ? '<div class="text-xs mt-1">꼴찌라 선택 불가</div>' : ''}
+                    </button>
+                </div>
+                <button 
+                    class="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
+                    onclick="this.closest('.fixed').remove()"
+                >
+                    취소
+                </button>
+            </div>
+        `;
+        
+        // Add click handlers for direction buttons
+        modal.querySelectorAll('.direction-btn').forEach(btn => {
+            if (!btn.disabled) {
+                btn.onclick = () => {
+                    const direction = btn.dataset.direction;
+                    const cardWithDirection = { ...card, direction };
+                    modal.remove();
+                    this.gameEngine.playCard(0, cardWithDirection.id, cardWithDirection);
+                };
+            }
+        });
+        
+        document.body.appendChild(modal);
     }
 
     showMessage(text, isPlayer = true) {
