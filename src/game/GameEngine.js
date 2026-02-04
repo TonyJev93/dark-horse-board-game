@@ -201,11 +201,12 @@ export class GameEngine {
 
         this.gameState.isGameOver = true;
 
+        const winnerId = this.gameState.horseOrder[6];
+
         this.eventBus.emit('game:finishing', {
             winnerId,
         });
 
-        const winnerId = this.gameState.horseOrder[6];
         this.sceneManager.animateCamera(winnerId, () => {
             this.showResultModal();
         });
