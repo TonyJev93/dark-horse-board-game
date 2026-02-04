@@ -141,12 +141,15 @@ export class SceneManager {
 
     updateHorsePositions(horseOrder, immediate = false) {
         horseOrder.forEach((id, rank) => {
+            const horse = this.horses[id];
+            if (!horse) return;
+
             const targetZ = 25 - rank * 8;
             const targetX = -20 + (id - 0.5) * (40 / 7);
             if (immediate) {
-                this.horses[id].position.set(targetX, 0, targetZ);
+                horse.position.set(targetX, 0, targetZ);
             } else {
-                this.horses[id].userData.targetPos = new THREE.Vector3(targetX, 0, targetZ);
+                horse.userData.targetPos = new THREE.Vector3(targetX, 0, targetZ);
             }
         });
     }
