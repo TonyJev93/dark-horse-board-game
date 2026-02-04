@@ -212,16 +212,14 @@ export class UIManager {
                           ? 'text-orange-600'
                           : 'text-purple-600';
 
-            const description = card.target
-                ? `${card.target}번 말`
-                : card.type === 'rider_fall_off'
-                  ? '3등 → 7등'
-                  : '전략적 선택';
+            const description = card.type === 'rider_fall_off'
+                ? '3등 → 7등'
+                : `${card.target}번 말`;
 
             const koreanType = {
                 'forward': '직진',
                 'backward': '후진',
-                'plus_minus': '직진/후진',
+                'plus_minus': '직진 or 후진',
                 'rider_fall_off': '낙마'
             }[card.type] || card.type.replaceAll('_', ' ');
 
