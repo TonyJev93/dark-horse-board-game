@@ -211,8 +211,8 @@
                     <p id="placement-turn-info" class="text-blue-400 font-bold mb-4 text-xl">
                         플레이어 차례: 말을 선택하고 왼쪽 또는 오른쪽에 배치하세요
                     </p>
-                    <p class="text-white/60 text-sm mb-8">
-                        단축키: 1-7 (말 선택) | Q (왼쪽 배치) | E (오른쪽 배치)
+                    <p class="text-white/60 text-sm mb-4">
+                        단축키: 1-7 (말 선택) | Q (왼쪽 배치) | E (오른쪽 배치) | Z (턴 스킵)
                     </p>
 
                     <!-- 현재 배치된 말 -->
@@ -224,20 +224,34 @@
                     </div>
 
                     <!-- 배치 버튼 -->
-                    <div id="placement-buttons" class="flex gap-6 justify-center mb-12">
+                    <div id="placement-buttons" class="flex gap-6 justify-center mb-8">
                         <button
                             id="place-left-btn"
-                            class="bg-blue-600 text-white font-black px-12 py-4 rounded-full hover:bg-blue-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+                            class="relative bg-blue-600 text-white font-black px-12 py-4 rounded-full hover:bg-blue-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
                             disabled
                         >
+                            <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">Q</div>
                             ← 왼쪽에 배치 (꼴찌)
                         </button>
                         <button
                             id="place-right-btn"
-                            class="bg-red-600 text-white font-black px-12 py-4 rounded-full hover:bg-red-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+                            class="relative bg-red-600 text-white font-black px-12 py-4 rounded-full hover:bg-red-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
                             disabled
                         >
+                            <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">E</div>
                             오른쪽에 배치 (1등) →
+                        </button>
+                    </div>
+
+                    <!-- 스킵 버튼 -->
+                    <div class="mb-8">
+                        <button
+                            id="skip-placement-btn"
+                            class="relative bg-gray-600 text-white font-bold px-8 py-3 rounded-full hover:bg-gray-500 transition-all transform hover:scale-105 shadow-xl disabled:bg-gray-800 disabled:cursor-not-allowed disabled:transform-none"
+                            disabled
+                        >
+                            <div class="absolute top-2 left-2 w-5 h-5 bg-white/30 text-white text-[10px] font-bold rounded-full flex items-center justify-center">Z</div>
+                            턴 스킵
                         </button>
                     </div>
 

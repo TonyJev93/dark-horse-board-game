@@ -46,6 +46,10 @@ export class GameEngine {
         this.eventBus.on('placement:placeHorse', ({ position }) => {
             this.placeHorse(position);
         });
+
+        this.eventBus.on('placement:skipTurn', () => {
+            this.skipPlacementTurn();
+        });
     }
 
     /**
@@ -288,6 +292,16 @@ export class GameEngine {
             if (this.gameState.placementTurn !== 0) {
                 setTimeout(() => this.aiPlacementTurn(), 1000);
             }
+        }
+    }
+
+    skipPlacementTurn() {
+        if (this.gameState.placementTurn !== 0) return;
+        
+        this.gameState.placementTurn = (this.gameState.placementTurn + 1) % this.gameState.playerCount;
+        
+        if (this.gameState.placementTurn !== 0) {
+            setTimeout(() => this.aiPlacementTurn(), 1000);
         }
     }
 

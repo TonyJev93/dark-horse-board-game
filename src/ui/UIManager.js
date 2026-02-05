@@ -133,6 +133,12 @@ export class UIManager {
                         e.preventDefault();
                         placeRightBtn.click();
                     }
+                } else if (key.toLowerCase() === 'z') {
+                    const skipBtn = document.getElementById('skip-placement-btn');
+                    if (skipBtn && !skipBtn.disabled) {
+                        e.preventDefault();
+                        skipBtn.click();
+                    }
                 }
                 return;
             }
@@ -735,6 +741,7 @@ export class UIManager {
     setupPlacementEventListeners() {
         const placeLeftBtn = document.getElementById('place-left-btn');
         const placeRightBtn = document.getElementById('place-right-btn');
+        const skipBtn = document.getElementById('skip-placement-btn');
         
         if (placeLeftBtn && !placeLeftBtn.dataset.listenerAttached) {
             placeLeftBtn.addEventListener('click', () => {
@@ -748,6 +755,13 @@ export class UIManager {
                 this.eventBus.emit('placement:placeHorse', { position: 'right' });
             });
             placeRightBtn.dataset.listenerAttached = 'true';
+        }
+
+        if (skipBtn && !skipBtn.dataset.listenerAttached) {
+            skipBtn.addEventListener('click', () => {
+                this.eventBus.emit('placement:skipTurn');
+            });
+            skipBtn.dataset.listenerAttached = 'true';
         }
     }
 
@@ -768,16 +782,18 @@ export class UIManager {
         }
         
         availableHorsesDisplay.innerHTML = '';
-        this.gameState.availableHorses.forEach(horseId => {
+        this.gameState.availableHorses.forEach((horseId, index) => {
             const card = document.createElement('div');
             card.className = `horse-placement-card transition-transform ${isPlayerTurn ? 'cursor-pointer hover:scale-110' : 'opacity-50 cursor-not-allowed'}`;
             card.setAttribute('data-horse-id', horseId);
             
             const isSelected = this.gameState.selectedHorseForPlacement === horseId;
             const horseColor = HORSE_COLORS[horseId].toString(16).padStart(6, '0');
+            const shortcutNum = index + 1;
             
             card.innerHTML = `
-                <div class="w-24 h-24 rounded-2xl border-4 ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-white/30'} flex items-center justify-center transition-all" style="background-color: #${horseColor}30;">
+                <div class="relative w-24 h-24 rounded-2xl border-4 ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-white/30'} flex items-center justify-center transition-all" style="background-color: #${horseColor}30;">
+                    <div class="absolute top-1 left-1 w-5 h-5 bg-gray-800 text-white text-[10px] font-bold rounded-full flex items-center justify-center">${shortcutNum}</div>
                     <div class="text-center">
                         <div class="text-4xl font-black text-white drop-shadow-lg">${horseId}</div>
                         ${isSelected ? '<div class="text-xs text-blue-400 font-bold mt-1">선택됨</div>' : ''}
@@ -816,11 +832,16 @@ export class UIManager {
         }
         
         const hasSelected = this.gameState.selectedHorseForPlacement !== null;
+        const skipBtn = document.getElementById('skip-placement-btn');
+        
         if (placeLeftBtn) {
             placeLeftBtn.disabled = !isPlayerTurn || !hasSelected;
         }
         if (placeRightBtn) {
             placeRightBtn.disabled = !isPlayerTurn || !hasSelected;
+        }
+        if (skipBtn) {
+            skipBtn.disabled = !isPlayerTurn;
         }
     }
 }
