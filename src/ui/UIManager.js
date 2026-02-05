@@ -759,7 +759,7 @@ export class UIManager {
 
         if (skipBtn && !skipBtn.dataset.listenerAttached) {
             skipBtn.addEventListener('click', () => {
-                this.eventBus.emit('placement:skipTurn');
+                this.eventBus.emit('placement:skipAll');
             });
             skipBtn.dataset.listenerAttached = 'true';
         }

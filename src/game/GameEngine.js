@@ -47,8 +47,8 @@ export class GameEngine {
             this.placeHorse(position);
         });
 
-        this.eventBus.on('placement:skipTurn', () => {
-            this.skipPlacementTurn();
+        this.eventBus.on('placement:skipAll', () => {
+            this.skipAllPlacement();
         });
     }
 
@@ -295,14 +295,20 @@ export class GameEngine {
         }
     }
 
-    skipPlacementTurn() {
+    skipAllPlacement() {
         if (this.gameState.placementTurn !== 0) return;
-        
-        this.gameState.placementTurn = (this.gameState.placementTurn + 1) % this.gameState.playerCount;
-        
-        if (this.gameState.placementTurn !== 0) {
-            setTimeout(() => this.aiPlacementTurn(), 1000);
-        }
+
+        const remainingHorses = [...this.gameState.availableHorses];
+        const shuffledHorses = remainingHorses.sort(() => Math.random() - 0.5);
+
+        this.gameState.placedHorses = [...this.gameState.placedHorses, ...shuffledHorses.slice(0, -1)];
+        this.gameState.darkHorseId = shuffledHorses[shuffledHorses.length - 1];
+        this.gameState.availableHorses = [this.gameState.darkHorseId];
+        this.gameState.horseOrder = [this.gameState.darkHorseId, ...this.gameState.placedHorses];
+
+        this.uiManager.hidePlacementScreen();
+        this.gameState.gamePhase = 'playing';
+        this.startGameAfterBetting(this.gameState.playerBettingSelection);
     }
 
     aiPlacementTurn() {
