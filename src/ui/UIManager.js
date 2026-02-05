@@ -513,8 +513,8 @@ export class UIManager {
 
         const renderModal = () => {
             const step1Active = selectedPlayerCardIdx === null;
-            const step2Active = selectedPlayerCardIdx !== null && selectedTargetPlayerIdx === null;
-            const step3Active = selectedPlayerCardIdx !== null && selectedTargetPlayerIdx !== null && selectedTargetCardIdx === null;
+            const step2Active = selectedPlayerCardIdx !== null && selectedTargetCardIdx === null;
+            const step3Active = selectedPlayerCardIdx !== null && selectedTargetCardIdx !== null;
 
             let stepIndicator = '';
             if (step1Active) {
