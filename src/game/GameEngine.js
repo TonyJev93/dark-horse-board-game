@@ -1,6 +1,7 @@
 import { CardProcessor } from './CardProcessor.js';
 import { GameSetup } from './GameSetup.js';
 import { ScoreCalculator } from './ScoreCalculator.js';
+import { HORSE_COUNT } from '../core/GameConfig.js';
 
 /**
  * Main game engine coordinating game flow, card processing, and AI turns
@@ -276,8 +277,7 @@ export class GameEngine {
     }
 
     showGameStartMessage() {
-        const darkHorseRank = this.gameState.horseOrder.indexOf(this.gameState.darkHorseId) + 1;
-        const message = `다크호스: ${this.gameState.darkHorseId}번 말 (현재 ${darkHorseRank}등)`;
+        const message = `다크호스: ${this.gameState.darkHorseId}번 말 (${HORSE_COUNT}등)`;
         this.eventBus.emit('game:startMessage', { message });
     }
 
