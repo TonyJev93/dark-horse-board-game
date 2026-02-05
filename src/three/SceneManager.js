@@ -234,13 +234,13 @@ export class SceneManager {
         });
     }
 
-    updateBettingArrows(bettings, hasToken) {
+    updateBettingArrows(bettings, hasToken, darkHorseId) {
         const myBettings = bettings[0];
         
         Object.values(this.horses).forEach((horse) => {
             const horseId = horse.userData.id;
             const isMyHorse = myBettings.includes(horseId);
-            const isDarkHorse = horseId === horse.userData.isDarkHorse;
+            const isDarkHorse = horseId === darkHorseId;
             
             horse.children.forEach((child) => {
                 if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
