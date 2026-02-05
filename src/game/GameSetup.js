@@ -2,8 +2,12 @@ import { CARD_TYPES, TOTAL_ACTION_CARDS, CARDS_PER_PLAYER } from '../core/GameCo
 
 export class GameSetup {
     static initializeGame(gameState, playerBetting = null) {
-        gameState.horseOrder = [...gameState.horseIds].sort(() => Math.random() - 0.5);
-        gameState.darkHorseId = gameState.horseOrder[0];
+        if (gameState.horseOrder.length === 0) {
+            gameState.horseOrder = [...gameState.horseIds].sort(() => Math.random() - 0.5);
+        }
+        if (!gameState.darkHorseId) {
+            gameState.darkHorseId = gameState.horseOrder[0];
+        }
 
         if (playerBetting && playerBetting.length === 2) {
             gameState.bettings[0] = [...playerBetting];
@@ -14,6 +18,14 @@ export class GameSetup {
         for (let i = 1; i < gameState.playerCount; i++) {
             gameState.bettings[i] = this.selectRandomHorses(2, gameState.horseIds);
         }
+
+        const allBettingCards = [...gameState.horseIds, ...gameState.horseIds];
+        const usedCards = gameState.bettings.flat();
+        gameState.bettingDeck = allBettingCards.filter((card, idx) => {
+            const count = usedCards.filter(c => c === card).length;
+            const availableCount = allBettingCards.filter((c, i) => c === card && i <= idx).length;
+            return availableCount > count;
+        });
 
         const allActionCards = this.generateActionCards();
         for (let i = 0; i < gameState.playerCount; i++) {

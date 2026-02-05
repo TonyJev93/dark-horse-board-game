@@ -56,13 +56,29 @@ export class UIManager {
             console.log('state:gamePhase event received:', newValue);
             if (newValue === 'betting') {
                 this.showBettingSelection();
+            } else if (newValue === 'placement') {
+                this.hideBettingSelection();
+                this.showPlacementScreen();
             } else if (newValue === 'playing') {
                 this.hideBettingSelection();
+                this.hidePlacementScreen();
             }
         });
 
         this.eventBus.on('state:playerBettingSelection', () => {
             this.updateBettingSelectionUI();
+        });
+
+        this.eventBus.on('state:placedHorses', () => {
+            this.updatePlacementUI();
+        });
+
+        this.eventBus.on('state:selectedHorseForPlacement', () => {
+            this.updatePlacementUI();
+        });
+
+        this.eventBus.on('state:placementTurn', () => {
+            this.updatePlacementUI();
         });
     }
 
@@ -91,6 +107,31 @@ export class UIManager {
                     if (confirmBtn && !confirmBtn.disabled) {
                         e.preventDefault();
                         confirmBtn.click();
+                    }
+                }
+                return;
+            }
+
+            if (this.gameState.gamePhase === 'placement') {
+                if (this.gameState.placementTurn !== 0) return;
+                
+                if (key >= '1' && key <= '7') {
+                    const horseId = parseInt(key);
+                    if (this.gameState.availableHorses.includes(horseId)) {
+                        this.eventBus.emit('placement:horseSelected', { horseId });
+                        e.preventDefault();
+                    }
+                } else if (key.toLowerCase() === 'q') {
+                    const placeLeftBtn = document.getElementById('place-left-btn');
+                    if (placeLeftBtn && !placeLeftBtn.disabled) {
+                        e.preventDefault();
+                        placeLeftBtn.click();
+                    }
+                } else if (key.toLowerCase() === 'e') {
+                    const placeRightBtn = document.getElementById('place-right-btn');
+                    if (placeRightBtn && !placeRightBtn.disabled) {
+                        e.preventDefault();
+                        placeRightBtn.click();
                     }
                 }
                 return;
@@ -295,7 +336,9 @@ export class UIManager {
                           ? '💣'
                           : card.type === 'multi_move'
                             ? '🏇🏇'
-                            : '🏇';
+                            : card.type === 'exchange_betting'
+                              ? '🔄'
+                              : '🏇';
 
             const color =
                 card.type === 'forward'
@@ -308,20 +351,25 @@ export class UIManager {
                           ? 'text-orange-600'
                           : card.type === 'multi_move'
                             ? 'text-purple-600'
-                            : 'text-purple-600';
+                            : card.type === 'exchange_betting'
+                              ? 'text-yellow-600'
+                              : 'text-purple-600';
 
             const description = card.type === 'rider_fall_off'
                 ? '3등 → 7등'
                 : card.type === 'multi_move'
                   ? `${card.targets.join(', ')}번 말`
-                  : `${card.target}번 말`;
+                  : card.type === 'exchange_betting'
+                    ? '베팅 교환'
+                    : `${card.target}번 말`;
 
             const koreanType = {
                 'forward': '전진',
                 'backward': '후진',
                 'plus_minus': '전진 or 후진',
                 'rider_fall_off': '낙마',
-                'multi_move': card.direction === 'forward' ? '다중 전진' : '다중 후진'
+                'multi_move': card.direction === 'forward' ? '다중 전진' : '다중 후진',
+                'exchange_betting': '베팅 카드 교환'
             }[card.type] || card.type.replaceAll('_', ' ');
 
             el.innerHTML = `${shortcutBadge}<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;
@@ -329,6 +377,8 @@ export class UIManager {
             if (!isDisabled) {
                 if (card.type === 'plus_minus') {
                     el.onclick = () => this.showDirectionSelection(card);
+                } else if (card.type === 'exchange_betting') {
+                    el.onclick = () => this.gameEngine.playCard(0, card.id);
                 } else {
                     el.onclick = () => this.gameEngine.playCard(0, card.id);
                 }
@@ -435,6 +485,87 @@ export class UIManager {
                 };
             }
         });
+
+        document.body.appendChild(modal);
+    }
+
+    showExchangeBettingModal(card) {
+        const modal = document.createElement('div');
+        this.exchangeBettingModal = modal;
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 pointer-events-auto';
+
+        const myBettings = this.gameState.bettings[0];
+        const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i).filter(i => i !== 0);
+
+        let opponentsHTML = opponents.map((playerIdx, idx) => {
+            const bettings = this.gameState.bettings[playerIdx];
+            return `
+                <div class="col-span-2 border-t border-gray-200 pt-3 mt-3">
+                    <div class="font-bold text-sm mb-2 text-gray-700">AI ${playerIdx}의 베팅 카드 교환</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${bettings.map((horseId, cardIdx) => `
+                            <button
+                                class="exchange-target-btn bg-orange-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-orange-600 transition text-sm"
+                                data-player="${playerIdx}"
+                                data-card-idx="${cardIdx}"
+                            >
+                                ${horseId}번 말 교환
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+                <h3 class="text-xl font-bold text-center mb-4">베팅 카드 교환</h3>
+                <p class="text-center mb-6 text-sm text-gray-600">본인 또는 상대의 베팅 카드 1장을 교환합니다</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 font-bold text-sm mb-2 text-gray-700">내 베팅 카드 교환</div>
+                    ${myBettings.map((horseId, cardIdx) => `
+                        <button
+                            class="self-exchange-btn bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+                            data-card-idx="${cardIdx}"
+                        >
+                            <div class="text-2xl mb-1">${horseId}</div>
+                            <div class="text-xs">번 말 교환</div>
+                        </button>
+                    `).join('')}
+                    ${opponentsHTML}
+                </div>
+                <button
+                    class="cancel-exchange-btn mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
+                >
+                    취소
+                </button>
+            </div>
+        `;
+
+        modal.querySelectorAll('.self-exchange-btn').forEach(btn => {
+            btn.onclick = () => {
+                const cardIdx = parseInt(btn.dataset.cardIdx);
+                modal.remove();
+                this.exchangeBettingModal = null;
+                this.gameEngine.performExchangeBetting(0, 0, cardIdx);
+            };
+        });
+
+        modal.querySelectorAll('.exchange-target-btn').forEach(btn => {
+            btn.onclick = () => {
+                const playerIdx = parseInt(btn.dataset.player);
+                const cardIdx = parseInt(btn.dataset.cardIdx);
+                modal.remove();
+                this.exchangeBettingModal = null;
+                this.gameEngine.performExchangeBetting(0, playerIdx, cardIdx);
+            };
+        });
+
+        modal.querySelector('.cancel-exchange-btn').onclick = () => {
+            modal.remove();
+            this.exchangeBettingModal = null;
+            this.gameState.hands[0].push(card);
+        };
 
         document.body.appendChild(modal);
     }
@@ -576,5 +707,120 @@ export class UIManager {
                 cardInner.classList.add('border-white/30');
             }
         });
+    }
+
+    showPlacementScreen() {
+        console.log('UIManager.showPlacementScreen() called');
+        const screen = document.getElementById('placement-screen');
+        if (!screen) {
+            console.error('placement-screen element not found');
+            return;
+        }
+        
+        screen.classList.remove('hidden');
+        screen.style.display = 'flex';
+        
+        this.setupPlacementEventListeners();
+        this.updatePlacementUI();
+    }
+
+    hidePlacementScreen() {
+        const screen = document.getElementById('placement-screen');
+        if (screen) {
+            screen.classList.add('hidden');
+            screen.style.display = 'none';
+        }
+    }
+
+    setupPlacementEventListeners() {
+        const placeLeftBtn = document.getElementById('place-left-btn');
+        const placeRightBtn = document.getElementById('place-right-btn');
+        
+        if (placeLeftBtn && !placeLeftBtn.dataset.listenerAttached) {
+            placeLeftBtn.addEventListener('click', () => {
+                this.eventBus.emit('placement:placeHorse', { position: 'left' });
+            });
+            placeLeftBtn.dataset.listenerAttached = 'true';
+        }
+        
+        if (placeRightBtn && !placeRightBtn.dataset.listenerAttached) {
+            placeRightBtn.addEventListener('click', () => {
+                this.eventBus.emit('placement:placeHorse', { position: 'right' });
+            });
+            placeRightBtn.dataset.listenerAttached = 'true';
+        }
+    }
+
+    updatePlacementUI() {
+        const turnInfo = document.getElementById('placement-turn-info');
+        const availableHorsesDisplay = document.getElementById('available-horses-display');
+        const placedHorsesDisplay = document.getElementById('placed-horses-display');
+        const placeLeftBtn = document.getElementById('place-left-btn');
+        const placeRightBtn = document.getElementById('place-right-btn');
+        
+        if (!availableHorsesDisplay) return;
+        
+        const isPlayerTurn = this.gameState.placementTurn === 0;
+        const turnPlayer = this.gameState.placementTurn === 0 ? '플레이어' : `AI ${this.gameState.placementTurn}`;
+        
+        if (turnInfo) {
+            turnInfo.textContent = `${turnPlayer} 차례: 말을 선택하고 왼쪽 또는 오른쪽에 배치하세요`;
+        }
+        
+        availableHorsesDisplay.innerHTML = '';
+        this.gameState.availableHorses.forEach(horseId => {
+            const card = document.createElement('div');
+            card.className = `horse-placement-card transition-transform ${isPlayerTurn ? 'cursor-pointer hover:scale-110' : 'opacity-50 cursor-not-allowed'}`;
+            card.setAttribute('data-horse-id', horseId);
+            
+            const isSelected = this.gameState.selectedHorseForPlacement === horseId;
+            const horseColor = HORSE_COLORS[horseId].toString(16).padStart(6, '0');
+            
+            card.innerHTML = `
+                <div class="w-24 h-24 rounded-2xl border-4 ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-white/30'} flex items-center justify-center transition-all" style="background-color: #${horseColor}30;">
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-white drop-shadow-lg">${horseId}</div>
+                        ${isSelected ? '<div class="text-xs text-blue-400 font-bold mt-1">선택됨</div>' : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (isPlayerTurn) {
+                card.addEventListener('click', () => {
+                    this.eventBus.emit('placement:horseSelected', { horseId });
+                });
+            }
+            
+            availableHorsesDisplay.appendChild(card);
+        });
+        
+        placedHorsesDisplay.innerHTML = '';
+        if (this.gameState.placedHorses.length === 0) {
+            placedHorsesDisplay.innerHTML = '<div class="text-white/40 text-sm">말을 배치해주세요</div>';
+        } else {
+            this.gameState.placedHorses.forEach((horseId, index) => {
+                const horseColor = HORSE_COLORS[horseId].toString(16).padStart(6, '0');
+                const card = document.createElement('div');
+                card.className = 'w-20 h-20 rounded-xl border-2 border-white/30 flex items-center justify-center' ;
+                card.style.backgroundColor = `#${horseColor}`;
+                card.innerHTML = `<div class="text-3xl font-black text-white drop-shadow-lg">${horseId}</div>`;
+                placedHorsesDisplay.appendChild(card);
+                
+                if (index < this.gameState.placedHorses.length - 1) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'text-white/40 text-2xl';
+                    arrow.textContent = '→';
+                    placedHorsesDisplay.appendChild(arrow);
+                }
+            });
+        }
+        
+        const hasSelected = this.gameState.selectedHorseForPlacement !== null;
+        if (placeLeftBtn) {
+            placeLeftBtn.disabled = !isPlayerTurn || !hasSelected;
+        }
+        if (placeRightBtn) {
+            placeRightBtn.disabled = !isPlayerTurn || !hasSelected;
+        }
     }
 }

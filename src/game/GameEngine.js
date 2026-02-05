@@ -38,6 +38,14 @@ export class GameEngine {
         this.eventBus.on('betting:confirmed', ({ selection }) => {
             this.startGameAfterBetting(selection);
         });
+
+        this.eventBus.on('placement:horseSelected', ({ horseId }) => {
+            this.gameState.selectHorseForPlacement(horseId);
+        });
+
+        this.eventBus.on('placement:placeHorse', ({ position }) => {
+            this.placeHorse(position);
+        });
     }
 
     /**
@@ -48,6 +56,12 @@ export class GameEngine {
         if (this.gameState.gamePhase === 'betting') {
             console.log('Showing betting selection...');
             this.uiManager.showBettingSelection();
+        } else if (this.gameState.gamePhase === 'placement') {
+            console.log('Showing placement screen...');
+            this.uiManager.showPlacementScreen();
+            if (this.gameState.placementTurn !== 0) {
+                setTimeout(() => this.aiPlacementTurn(), 1000);
+            }
         } else {
             this.startGameAfterBetting();
         }
@@ -85,7 +99,15 @@ export class GameEngine {
         const card = this.gameState.removeCard(playerIdx, cardId);
         if (!card) return;
 
-        // For plus_minus cards, use the card data with direction
+        if (card.type === 'exchange_betting') {
+            if (playerIdx === 0) {
+                this.uiManager.showExchangeBettingModal(card);
+            } else {
+                this.aiExchangeBetting(playerIdx);
+            }
+            return;
+        }
+
         const processedCard = card.type === 'plus_minus' && cardData ? { ...card, ...cardData } : card;
 
         this.gameState.isAnimating = true;
@@ -250,8 +272,70 @@ export class GameEngine {
     }
 
     showGameStartMessage() {
-        this.eventBus.emit('game:startMessage', {
-            message: '게임 시작!!!'
-        });
+        const darkHorseRank = this.gameState.horseOrder.indexOf(this.gameState.darkHorseId) + 1;
+        const message = `다크호스: ${this.gameState.darkHorseId}번 말 (현재 ${darkHorseRank}등)`;
+        this.eventBus.emit('game:startMessage', { message });
+    }
+
+    placeHorse(position) {
+        const isComplete = this.gameState.placeHorseAt(position);
+        
+        if (isComplete) {
+            this.uiManager.hidePlacementScreen();
+            this.gameState.gamePhase = 'playing';
+            this.startGameAfterBetting(this.gameState.playerBettingSelection);
+        } else {
+            if (this.gameState.placementTurn !== 0) {
+                setTimeout(() => this.aiPlacementTurn(), 1000);
+            }
+        }
+    }
+
+    aiPlacementTurn() {
+        const availableHorses = this.gameState.availableHorses;
+        if (availableHorses.length === 0) return;
+
+        const randomHorse = availableHorses[Math.floor(Math.random() * availableHorses.length)];
+        this.gameState.selectHorseForPlacement(randomHorse);
+
+        setTimeout(() => {
+            const randomPosition = Math.random() > 0.5 ? 'left' : 'right';
+            this.placeHorse(randomPosition);
+        }, 500);
+    }
+
+    performExchangeBetting(playerIdx, targetPlayerIdx, cardIdx) {
+        const result = this.gameState.exchangeBettingCard(targetPlayerIdx, cardIdx);
+        
+        if (result) {
+            const playerName = playerIdx === 0 ? '나' : `AI ${playerIdx}`;
+            const targetName = targetPlayerIdx === 0 ? '나' : `AI ${targetPlayerIdx}`;
+            const message = `${playerName}: ${targetName}의 ${result.oldCard}번 말 → ${result.newCard}번 말로 교환!`;
+            
+            this.eventBus.emit('game:cardPlayed', {
+                playerIdx,
+                message,
+                isPlayer: playerIdx === 0,
+            });
+            
+            setTimeout(() => {
+                this.nextTurn();
+            }, 1500);
+        }
+    }
+
+    aiExchangeBetting(playerIdx) {
+        const option = Math.random() > 0.5 ? 'self' : 'opponent';
+        
+        if (option === 'self') {
+            const cardIdx = Math.floor(Math.random() * 2);
+            this.performExchangeBetting(playerIdx, playerIdx, cardIdx);
+        } else {
+            const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i)
+                .filter(i => i !== playerIdx);
+            const targetPlayer = opponents[Math.floor(Math.random() * opponents.length)];
+            const cardIdx = Math.floor(Math.random() * 2);
+            this.performExchangeBetting(playerIdx, targetPlayer, cardIdx);
+        }
     }
 }

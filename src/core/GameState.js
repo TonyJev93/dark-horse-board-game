@@ -35,8 +35,13 @@ export class GameState {
             isGameOver: false,
             rankPoints: RANK_POINTS,
             turnPhase: 'token',
-            gamePhase: 'betting', // 'betting' -> 'playing'
-            playerBettingSelection: [], // 플레이어가 선택한 베팅 말
+            gamePhase: 'betting',
+            playerBettingSelection: [],
+            placementTurn: 0,
+            availableHorses: Array.from({ length: HORSE_COUNT }, (_, i) => i + 1),
+            placedHorses: [],
+            selectedHorseForPlacement: null,
+            bettingDeck: []
         };
     }
 
@@ -125,6 +130,41 @@ export class GameState {
     }
     set playerBettingSelection(value) {
         this._setState({ playerBettingSelection: value });
+    }
+
+    get placementTurn() {
+        return this._state.placementTurn;
+    }
+    set placementTurn(value) {
+        this._setState({ placementTurn: value });
+    }
+
+    get availableHorses() {
+        return this._state.availableHorses;
+    }
+    set availableHorses(value) {
+        this._setState({ availableHorses: value });
+    }
+
+    get placedHorses() {
+        return this._state.placedHorses;
+    }
+    set placedHorses(value) {
+        this._setState({ placedHorses: value });
+    }
+
+    get selectedHorseForPlacement() {
+        return this._state.selectedHorseForPlacement;
+    }
+    set selectedHorseForPlacement(value) {
+        this._setState({ selectedHorseForPlacement: value });
+    }
+
+    get bettingDeck() {
+        return this._state.bettingDeck;
+    }
+    set bettingDeck(value) {
+        this._setState({ bettingDeck: value });
     }
 
     _setState(updates) {
@@ -231,18 +271,55 @@ export class GameState {
     }
 
     confirmBettingSelection() {
-        console.log('GameState.confirmBettingSelection() - selection:', this._state.playerBettingSelection);
-        if (this._state.playerBettingSelection.length === 2) {
-            const newBettings = [...this._state.bettings];
-            newBettings[0] = [...this._state.playerBettingSelection];
-            console.log('Setting gamePhase to playing...');
-            this._setState({ 
-                bettings: newBettings,
-                gamePhase: 'playing'
-            });
-            console.log('GamePhase changed to:', this._state.gamePhase);
+        if (this.playerBettingSelection.length === 2) {
+            this.gamePhase = 'placement';
+        }
+    }
+
+    selectHorseForPlacement(horseId) {
+        if (this.availableHorses.includes(horseId)) {
+            this.selectedHorseForPlacement = horseId;
+        }
+    }
+
+    placeHorseAt(position) {
+        if (!this.selectedHorseForPlacement) return false;
+
+        const newAvailableHorses = this.availableHorses.filter(
+            id => id !== this.selectedHorseForPlacement
+        );
+        const newPlacedHorses = [...this.placedHorses];
+
+        if (position === 'left') {
+            newPlacedHorses.unshift(this.selectedHorseForPlacement);
+        } else {
+            newPlacedHorses.push(this.selectedHorseForPlacement);
+        }
+
+        this.availableHorses = newAvailableHorses;
+        this.placedHorses = newPlacedHorses;
+        this.selectedHorseForPlacement = null;
+
+        if (newAvailableHorses.length === 1) {
+            this.darkHorseId = newAvailableHorses[0];
+            this.horseOrder = [...newPlacedHorses].reverse();
             return true;
         }
+
+        this.placementTurn = (this.placementTurn + 1) % this.playerCount;
         return false;
+    }
+
+    exchangeBettingCard(playerIdx, oldCardIdx) {
+        if (this.bettingDeck.length === 0) return null;
+
+        const newBettings = [...this._state.bettings];
+        const oldCard = newBettings[playerIdx][oldCardIdx];
+        const newCard = this.bettingDeck.shift();
+        
+        newBettings[playerIdx][oldCardIdx] = newCard;
+        this._setState({ bettings: newBettings });
+        
+        return { oldCard, newCard };
     }
 }

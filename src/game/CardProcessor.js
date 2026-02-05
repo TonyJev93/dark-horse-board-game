@@ -17,6 +17,13 @@ export class CardProcessor {
             return this.processMultiMoveCard(card, horseOrder, playerName);
         }
 
+        if (card.type === 'exchange_betting') {
+            return { 
+                newOrder: [...horseOrder], 
+                message: `${playerName}: 베팅 카드 교환!`
+            };
+        }
+
         const newOrder = [...horseOrder];
         let message = '';
         const horseId = card.target;

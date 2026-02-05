@@ -202,6 +202,53 @@
                 </div>
             </div>
 
+            <!-- Horse Placement Screen -->
+            <div id="placement-screen" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-50 pointer-events-auto">
+                <div class="text-center max-w-6xl w-full px-8">
+                    <h1 class="text-6xl font-black text-white mb-4 italic tracking-tight">
+                        말 배치
+                    </h1>
+                    <p id="placement-turn-info" class="text-blue-400 font-bold mb-4 text-xl">
+                        플레이어 차례: 말을 선택하고 왼쪽 또는 오른쪽에 배치하세요
+                    </p>
+                    <p class="text-white/60 text-sm mb-8">
+                        단축키: 1-7 (말 선택) | Q (왼쪽 배치) | E (오른쪽 배치)
+                    </p>
+
+                    <!-- 현재 배치된 말 -->
+                    <div class="mb-12">
+                        <div class="text-white/60 text-sm mb-4">현재 배치 상태 (왼쪽 = 꼴찌, 오른쪽 = 1등)</div>
+                        <div id="placed-horses-display" class="flex gap-3 justify-center items-center min-h-[80px]">
+                            <div class="text-white/40 text-sm">말을 배치해주세요</div>
+                        </div>
+                    </div>
+
+                    <!-- 배치 버튼 -->
+                    <div id="placement-buttons" class="flex gap-6 justify-center mb-12">
+                        <button
+                            id="place-left-btn"
+                            class="bg-blue-600 text-white font-black px-12 py-4 rounded-full hover:bg-blue-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+                            disabled
+                        >
+                            ← 왼쪽에 배치 (꼴찌)
+                        </button>
+                        <button
+                            id="place-right-btn"
+                            class="bg-red-600 text-white font-black px-12 py-4 rounded-full hover:bg-red-500 transition-all transform hover:scale-110 shadow-2xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+                            disabled
+                        >
+                            오른쪽에 배치 (1등) →
+                        </button>
+                    </div>
+
+                    <!-- 남은 말 선택 -->
+                    <div class="text-white/60 text-sm mb-4">배치할 말 선택</div>
+                    <div id="available-horses-display" class="flex gap-4 justify-center flex-wrap">
+                        <!-- 선택 가능한 말들이 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Result Screen -->
             <div id="result-screen">
                 <h1 class="text-6xl font-black text-white mb-2 italic tracking-tighter">
