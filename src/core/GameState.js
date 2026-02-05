@@ -302,7 +302,9 @@ export class GameState {
 
         if (newAvailableHorses.length === 1) {
             this.darkHorseId = newAvailableHorses[0];
-            this.horseOrder = [...newPlacedHorses].reverse();
+            // horseOrder: [7th, 6th, 5th, 4th, 3rd, 2nd, 1st]
+            // placedHorses: [leftmost(7th), ..., rightmost(1st)]
+            this.horseOrder = [this.darkHorseId, ...newPlacedHorses];
             return true;
         }
 
