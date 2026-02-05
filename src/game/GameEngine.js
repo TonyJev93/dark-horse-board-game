@@ -341,6 +341,7 @@ export class GameEngine {
             const delay = playerIdx === 0 ? 2000 : 1500;
             setTimeout(() => {
                 this.gameState.isAnimating = false;
+                this.sceneManager.updateBettingArrows(this.gameState.bettings, this.gameState.tokens[0] > 0);
                 this.endTurn();
             }, delay);
         } else {

@@ -233,4 +233,35 @@ export class SceneManager {
             }
         });
     }
+
+    updateBettingArrows(bettings, hasToken) {
+        const myBettings = bettings[0];
+        
+        Object.values(this.horses).forEach((horse) => {
+            const horseId = horse.userData.id;
+            const isMyHorse = myBettings.includes(horseId);
+            const isDarkHorse = horseId === horse.userData.isDarkHorse;
+            
+            horse.children.forEach((child) => {
+                if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
+                    const arrowMesh = child.userData.arrowMesh;
+                    if (arrowMesh.material) {
+                        if (hasToken && isMyHorse) {
+                            arrowMesh.material.color.setHex(0x000000);
+                            arrowMesh.material.transparent = false;
+                            arrowMesh.material.opacity = 1.0;
+                        } else if (isMyHorse) {
+                            arrowMesh.material.color.setHex(0xff0000);
+                            arrowMesh.material.transparent = false;
+                            arrowMesh.material.opacity = 1.0;
+                        } else if (isDarkHorse) {
+                            arrowMesh.material.color.setHex(0x000000);
+                            arrowMesh.material.transparent = true;
+                            arrowMesh.material.opacity = 0.3;
+                        }
+                    }
+                }
+            });
+        });
+    }
 }
