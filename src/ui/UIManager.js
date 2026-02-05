@@ -293,7 +293,9 @@ export class UIManager {
                         ? '±'
                         : card.type === 'rider_fall_off'
                           ? '💣'
-                          : '🏇';
+                          : card.type === 'multi_move'
+                            ? '🏇🏇'
+                            : '🏇';
 
             const color =
                 card.type === 'forward'
@@ -304,17 +306,22 @@ export class UIManager {
                         ? 'text-green-600'
                         : card.type === 'rider_fall_off'
                           ? 'text-orange-600'
-                          : 'text-purple-600';
+                          : card.type === 'multi_move'
+                            ? 'text-purple-600'
+                            : 'text-purple-600';
 
             const description = card.type === 'rider_fall_off'
                 ? '3등 → 7등'
-                : `${card.target}번 말`;
+                : card.type === 'multi_move'
+                  ? `${card.targets.join(', ')}번 말`
+                  : `${card.target}번 말`;
 
             const koreanType = {
                 'forward': '전진',
                 'backward': '후진',
                 'plus_minus': '전진 or 후진',
-                'rider_fall_off': '낙마'
+                'rider_fall_off': '낙마',
+                'multi_move': card.direction === 'forward' ? '다중 전진' : '다중 후진'
             }[card.type] || card.type.replaceAll('_', ' ');
 
             el.innerHTML = `${shortcutBadge}<span class="text-[10px] font-black text-gray-400 uppercase">${koreanType}</span><div class="text-5xl font-black ${color}">${icon}${card.value || ''}</div><div class="text-[11px] font-bold bg-gray-100 py-2 rounded-xl w-full text-center">${description}</div>`;

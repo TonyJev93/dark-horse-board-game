@@ -29,15 +29,23 @@ export class GameSetup {
         const allActionCards = [];
         for (let i = 0; i < TOTAL_ACTION_CARDS; i++) {
             const type = CARD_TYPES[Math.floor(Math.random() * CARD_TYPES.length)];
-            const value =
-                type === 'forward' || type === 'backward' || type === 'plus_minus'
-                    ? Math.floor(Math.random() * 2) + 1
-                    : null;
-            const target =
-                type === 'rider_fall_off'
-                    ? null
-                    : Math.floor(Math.random() * 7) + 1;
-            allActionCards.push({ id: i, type, value, target });
+            
+            if (type === 'multi_move') {
+                const value = Math.floor(Math.random() * 2) + 1;
+                const targets = this.selectRandomHorses(2, [1, 2, 3, 4, 5, 6, 7]);
+                const direction = Math.random() > 0.5 ? 'forward' : 'backward';
+                allActionCards.push({ id: i, type, value, targets, direction });
+            } else {
+                const value =
+                    type === 'forward' || type === 'backward' || type === 'plus_minus'
+                        ? Math.floor(Math.random() * 2) + 1
+                        : null;
+                const target =
+                    type === 'rider_fall_off'
+                        ? null
+                        : Math.floor(Math.random() * 7) + 1;
+                allActionCards.push({ id: i, type, value, target });
+            }
         }
         return allActionCards;
     }

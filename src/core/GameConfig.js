@@ -10,7 +10,7 @@ export const HORSE_COLORS = {
 
 export const RANK_POINTS = [0, 1, 2, 3, 5, 7, 10];
 
-export const CARD_TYPES = ['forward', 'backward', 'plus_minus', 'rider_fall_off'];
+export const CARD_TYPES = ['forward', 'backward', 'plus_minus', 'rider_fall_off', 'multi_move'];
 
 export const PLAYER_COUNT = 4;
 export const HORSE_COUNT = 7;
