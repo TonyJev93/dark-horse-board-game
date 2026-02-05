@@ -617,6 +617,7 @@ export class UIManager {
                 confirmBtn.onclick = () => {
                     modal.remove();
                     this.exchangeBettingModal = null;
+                    this.gameState.isAnimating = true;
                     this.gameEngine.performExchangeBetting(0, selectedTargetPlayerIdx, selectedPlayerCardIdx, selectedTargetCardIdx);
                 };
             }
