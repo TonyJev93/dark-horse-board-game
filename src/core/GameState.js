@@ -312,16 +312,17 @@ export class GameState {
         return false;
     }
 
-    exchangeBettingCard(playerIdx, oldCardIdx) {
-        if (this.bettingDeck.length === 0) return null;
-
+    exchangeBettingCard(playerIdx, targetPlayerIdx, playerCardIdx, targetCardIdx) {
         const newBettings = [...this._state.bettings];
-        const oldCard = newBettings[playerIdx][oldCardIdx];
-        const newCard = this.bettingDeck.shift();
         
-        newBettings[playerIdx][oldCardIdx] = newCard;
+        const playerCard = newBettings[playerIdx][playerCardIdx];
+        const targetCard = newBettings[targetPlayerIdx][targetCardIdx];
+        
+        newBettings[playerIdx][playerCardIdx] = targetCard;
+        newBettings[targetPlayerIdx][targetCardIdx] = playerCard;
+        
         this._setState({ bettings: newBettings });
         
-        return { oldCard, newCard };
+        return { playerCard, targetCard };
     }
 }

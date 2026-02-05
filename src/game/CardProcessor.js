@@ -92,14 +92,11 @@ export class CardProcessor {
         const hasLastPlace = targetRanks.includes(0);
         
         let actualDirection = direction || 'forward';
-        let directionChangeReason = '';
-        
+
         if (hasFirstPlace) {
             actualDirection = 'backward';
-            directionChangeReason = ' (1등 포함, 후진만 가능)';
         } else if (hasLastPlace) {
             actualDirection = 'forward';
-            directionChangeReason = ' (꼴찌 포함, 전진만 가능)';
         }
         
         targets.forEach(horseId => {
@@ -113,7 +110,7 @@ export class CardProcessor {
         
         const horseNumbers = targets.join('번, ') + '번';
         const directionText = actualDirection === 'forward' ? '전진' : '후진';
-        const message = `${playerName}: ${horseNumbers} 말 ${moveValue}칸 ${directionText}!${directionChangeReason}`;
+        const message = `${playerName}: ${horseNumbers} 말 ${moveValue}칸 ${directionText}`;
         
         return { newOrder, message };
     }

@@ -145,6 +145,10 @@ export class UIManager {
 
             if (this.gameState.turn !== 0) return;
 
+            if (this.exchangeBettingModal) {
+                return;
+            }
+
             if (this.directionModal) {
                 if (key === '1') {
                     const forwardBtn = this.directionModal.querySelector('[data-direction="forward"]');
@@ -500,79 +504,131 @@ export class UIManager {
         this.exchangeBettingModal = modal;
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 pointer-events-auto';
 
+        let selectedPlayerCardIdx = null;
+        let selectedTargetPlayerIdx = null;
+        let selectedTargetCardIdx = null;
+
         const myBettings = this.gameState.bettings[0];
         const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i).filter(i => i !== 0);
 
-        let opponentsHTML = opponents.map((playerIdx, idx) => {
-            const bettings = this.gameState.bettings[playerIdx];
-            return `
-                <div class="col-span-2 border-t border-gray-200 pt-3 mt-3">
-                    <div class="font-bold text-sm mb-2 text-gray-700">AI ${playerIdx}의 베팅 카드 교환</div>
-                    <div class="grid grid-cols-2 gap-2">
-                        ${bettings.map((horseId, cardIdx) => `
-                            <button
-                                class="exchange-target-btn bg-orange-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-orange-600 transition text-sm"
-                                data-player="${playerIdx}"
-                                data-card-idx="${cardIdx}"
-                            >
-                                ${horseId}번 말 교환
-                            </button>
-                        `).join('')}
+        const renderModal = () => {
+            const step1Active = selectedPlayerCardIdx === null;
+            const step2Active = selectedPlayerCardIdx !== null && selectedTargetPlayerIdx === null;
+            const step3Active = selectedPlayerCardIdx !== null && selectedTargetPlayerIdx !== null && selectedTargetCardIdx === null;
+
+            let stepIndicator = '';
+            if (step1Active) {
+                stepIndicator = '<div class="text-blue-600 font-bold mb-4 text-center">1단계: 교환할 내 카드를 선택하세요</div>';
+            } else if (step2Active) {
+                const mySelectedCard = myBettings[selectedPlayerCardIdx];
+                stepIndicator = `<div class="text-blue-600 font-bold mb-4 text-center">2단계: 교환할 상대 카드 선택<br><span class="text-sm text-gray-600">내 ${mySelectedCard}번 말 ↔ 상대 말</span></div>`;
+            }
+
+            let opponentsHTML = opponents.map((playerIdx) => {
+                const bettings = this.gameState.bettings[playerIdx];
+                const isTargetSelected = selectedTargetPlayerIdx === playerIdx;
+                return `
+                    <div class="col-span-2 border-t border-gray-200 pt-3 mt-3 ${step2Active || (step3Active && isTargetSelected) ? '' : 'opacity-50'}">
+                        <div class="font-bold text-sm mb-2 text-gray-700">AI ${playerIdx}의 베팅 카드</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${bettings.map((horseId, cardIdx) => {
+                                const isSelected = selectedTargetPlayerIdx === playerIdx && selectedTargetCardIdx === cardIdx;
+                                const btnClass = step2Active || (step3Active && isTargetSelected) 
+                                    ? `exchange-target-btn ${isSelected ? 'bg-green-600 ring-4 ring-green-300' : 'bg-orange-500 hover:bg-orange-600'} text-white px-3 py-2 rounded-lg font-bold transition text-sm`
+                                    : 'bg-gray-300 text-gray-500 px-3 py-2 rounded-lg font-bold text-sm cursor-not-allowed';
+                                return `
+                                    <button
+                                        class="${btnClass}"
+                                        data-player="${playerIdx}"
+                                        data-card-idx="${cardIdx}"
+                                        ${step2Active || (step3Active && isTargetSelected) ? '' : 'disabled'}
+                                    >
+                                        ${isSelected ? '✓ ' : ''}${horseId}번 말
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
+                `;
+            }).join('');
+
+            const confirmSection = step3Active ? `
+                <div class="mt-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
+                    <div class="text-center mb-4">
+                        <div class="text-lg font-bold text-green-800">교환 확인</div>
+                        <div class="text-sm text-gray-600 mt-1">
+                            내 ${myBettings[selectedPlayerCardIdx]}번 말 ↔ 상대 ${this.gameState.bettings[selectedTargetPlayerIdx][selectedTargetCardIdx]}번 말
+                        </div>
+                    </div>
+                    <button id="confirm-exchange-btn" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-700 transition text-lg">
+                        교환 실행
+                    </button>
+                </div>
+            ` : '';
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+                    <h3 class="text-xl font-bold text-center mb-2">베팅 카드 교환</h3>
+                    ${stepIndicator}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 font-bold text-sm mb-2 text-gray-700">내 베팅 카드</div>
+                        ${myBettings.map((horseId, cardIdx) => {
+                            const isSelected = selectedPlayerCardIdx === cardIdx;
+                            const btnClass = step1Active 
+                                ? `self-exchange-btn ${isSelected ? 'bg-green-600 ring-4 ring-green-300' : 'bg-blue-500 hover:bg-blue-600'} text-white px-4 py-3 rounded-lg font-bold transition`
+                                : (isSelected ? 'bg-green-600 ring-4 ring-green-300 text-white px-4 py-3 rounded-lg font-bold' : 'bg-gray-300 text-gray-500 px-4 py-3 rounded-lg font-bold cursor-not-allowed');
+                            return `
+                                <button
+                                    class="${btnClass}"
+                                    data-card-idx="${cardIdx}"
+                                    ${step1Active ? '' : 'disabled'}
+                                >
+                                    <div class="text-2xl mb-1">${isSelected ? '✓ ' : ''}${horseId}</div>
+                                    <div class="text-xs">번 말 ${isSelected ? '(선택됨)' : ''}</div>
+                                </button>
+                            `;
+                        }).join('')}
+                        ${opponentsHTML}
+                    </div>
+                    ${confirmSection}
+                    <button class="cancel-exchange-btn mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition">
+                        취소
+                    </button>
                 </div>
             `;
-        }).join('');
 
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-                <h3 class="text-xl font-bold text-center mb-4">베팅 카드 교환</h3>
-                <p class="text-center mb-6 text-sm text-gray-600">본인 또는 상대의 베팅 카드 1장을 교환합니다</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2 font-bold text-sm mb-2 text-gray-700">내 베팅 카드 교환</div>
-                    ${myBettings.map((horseId, cardIdx) => `
-                        <button
-                            class="self-exchange-btn bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition"
-                            data-card-idx="${cardIdx}"
-                        >
-                            <div class="text-2xl mb-1">${horseId}</div>
-                            <div class="text-xs">번 말 교환</div>
-                        </button>
-                    `).join('')}
-                    ${opponentsHTML}
-                </div>
-                <button
-                    class="cancel-exchange-btn mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-600 transition"
-                >
-                    취소
-                </button>
-            </div>
-        `;
+            modal.querySelectorAll('.self-exchange-btn:not([disabled])').forEach(btn => {
+                btn.onclick = () => {
+                    selectedPlayerCardIdx = parseInt(btn.dataset.cardIdx);
+                    renderModal();
+                };
+            });
 
-        modal.querySelectorAll('.self-exchange-btn').forEach(btn => {
-            btn.onclick = () => {
-                const cardIdx = parseInt(btn.dataset.cardIdx);
+            modal.querySelectorAll('.exchange-target-btn:not([disabled])').forEach(btn => {
+                btn.onclick = () => {
+                    selectedTargetPlayerIdx = parseInt(btn.dataset.player);
+                    selectedTargetCardIdx = parseInt(btn.dataset.cardIdx);
+                    renderModal();
+                };
+            });
+
+            const confirmBtn = modal.querySelector('#confirm-exchange-btn');
+            if (confirmBtn) {
+                confirmBtn.onclick = () => {
+                    modal.remove();
+                    this.exchangeBettingModal = null;
+                    this.gameEngine.performExchangeBetting(0, selectedTargetPlayerIdx, selectedPlayerCardIdx, selectedTargetCardIdx);
+                };
+            }
+
+            modal.querySelector('.cancel-exchange-btn').onclick = () => {
                 modal.remove();
                 this.exchangeBettingModal = null;
-                this.gameEngine.performExchangeBetting(0, 0, cardIdx);
+                this.gameState.hands[0].push(card);
             };
-        });
-
-        modal.querySelectorAll('.exchange-target-btn').forEach(btn => {
-            btn.onclick = () => {
-                const playerIdx = parseInt(btn.dataset.player);
-                const cardIdx = parseInt(btn.dataset.cardIdx);
-                modal.remove();
-                this.exchangeBettingModal = null;
-                this.gameEngine.performExchangeBetting(0, playerIdx, cardIdx);
-            };
-        });
-
-        modal.querySelector('.cancel-exchange-btn').onclick = () => {
-            modal.remove();
-            this.exchangeBettingModal = null;
-            this.gameState.hands[0].push(card);
         };
 
+        renderModal();
         document.body.appendChild(modal);
     }
 

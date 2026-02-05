@@ -324,13 +324,15 @@ export class GameEngine {
         }, 500);
     }
 
-    performExchangeBetting(playerIdx, targetPlayerIdx, cardIdx) {
-        const result = this.gameState.exchangeBettingCard(targetPlayerIdx, cardIdx);
+    performExchangeBetting(playerIdx, targetPlayerIdx, playerCardIdx, targetCardIdx) {
+        this.gameState.isAnimating = true;
+        
+        const result = this.gameState.exchangeBettingCard(playerIdx, targetPlayerIdx, playerCardIdx, targetCardIdx);
         
         if (result) {
             const playerName = playerIdx === 0 ? '나' : `AI ${playerIdx}`;
             const targetName = targetPlayerIdx === 0 ? '나' : `AI ${targetPlayerIdx}`;
-            const message = `${playerName}: ${targetName}의 ${result.oldCard}번 말 → ${result.newCard}번 말로 교환!`;
+            const message = `${playerName}: ${result.playerCard}번 ↔ ${targetName}의 ${result.targetCard}번 말 교환!`;
             
             this.eventBus.emit('game:cardPlayed', {
                 playerIdx,
@@ -339,23 +341,21 @@ export class GameEngine {
             });
             
             setTimeout(() => {
+                this.gameState.isAnimating = false;
                 this.nextTurn();
-            }, 1500);
+            }, 2000);
+        } else {
+            this.gameState.isAnimating = false;
         }
     }
 
     aiExchangeBetting(playerIdx) {
-        const option = Math.random() > 0.5 ? 'self' : 'opponent';
+        const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i)
+            .filter(i => i !== playerIdx);
+        const targetPlayer = opponents[Math.floor(Math.random() * opponents.length)];
+        const playerCardIdx = Math.floor(Math.random() * 2);
+        const targetCardIdx = Math.floor(Math.random() * 2);
         
-        if (option === 'self') {
-            const cardIdx = Math.floor(Math.random() * 2);
-            this.performExchangeBetting(playerIdx, playerIdx, cardIdx);
-        } else {
-            const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i)
-                .filter(i => i !== playerIdx);
-            const targetPlayer = opponents[Math.floor(Math.random() * opponents.length)];
-            const cardIdx = Math.floor(Math.random() * 2);
-            this.performExchangeBetting(playerIdx, targetPlayer, cardIdx);
-        }
+        this.performExchangeBetting(playerIdx, targetPlayer, playerCardIdx, targetCardIdx);
     }
 }
