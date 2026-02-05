@@ -1,20 +1,28 @@
 import { CARD_TYPES, TOTAL_ACTION_CARDS, CARDS_PER_PLAYER } from '../core/GameConfig.js';
 
 export class GameSetup {
-    static initializeGame(gameState) {
+    static initializeGame(gameState, playerBetting = null) {
         gameState.horseOrder = [...gameState.horseIds].sort(() => Math.random() - 0.5);
         gameState.darkHorseId = gameState.horseOrder[0];
 
-        for (let i = 0; i < gameState.playerCount; i++) {
-            gameState.bettings[i] = [...gameState.horseIds]
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 2);
+        if (playerBetting && playerBetting.length === 2) {
+            gameState.bettings[0] = [...playerBetting];
+        } else {
+            gameState.bettings[0] = this.selectRandomHorses(2, gameState.horseIds);
+        }
+
+        for (let i = 1; i < gameState.playerCount; i++) {
+            gameState.bettings[i] = this.selectRandomHorses(2, gameState.horseIds);
         }
 
         const allActionCards = this.generateActionCards();
         for (let i = 0; i < gameState.playerCount; i++) {
             gameState.hands[i] = allActionCards.splice(0, CARDS_PER_PLAYER);
         }
+    }
+
+    static selectRandomHorses(count, horseIds) {
+        return [...horseIds].sort(() => Math.random() - 0.5).slice(0, count);
     }
 
     static generateActionCards() {

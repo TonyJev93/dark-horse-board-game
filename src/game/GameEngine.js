@@ -34,29 +34,43 @@ export class GameEngine {
                 this.eventBus.emit('animation:completed', {});
             }
         });
+
+        this.eventBus.on('betting:confirmed', ({ selection }) => {
+            this.startGameAfterBetting(selection);
+        });
     }
 
     /**
      * Initialize game (setup horses and dark horse)
      */
     init() {
-        GameSetup.initializeGame(this.gameState);
+        console.log('GameEngine.init() - gamePhase:', this.gameState.gamePhase);
+        if (this.gameState.gamePhase === 'betting') {
+            console.log('Showing betting selection...');
+            this.uiManager.showBettingSelection();
+        } else {
+            this.startGameAfterBetting();
+        }
+    }
+
+    startGameAfterBetting(playerBetting = null) {
+        GameSetup.initializeGame(this.gameState, playerBetting);
         this.eventBus.emit('game:initialized', {
             darkHorseId: this.gameState.darkHorseId,
             horseOrder: this.gameState.horseOrder,
         });
         
-        // Show game start message
-        this.showGameStartMessage();
-        
-        // Start the first turn based on who is first
-        if (this.gameState.turn !== 0) {
-            // AI goes first
-            setTimeout(() => this.aiTurn(), 2000);
-        } else {
-            // Player goes first
-            setTimeout(() => this.startPlayerTurn(), 2000);
-        }
+        setTimeout(() => {
+            this.showGameStartMessage();
+            
+            setTimeout(() => {
+                if (this.gameState.turn !== 0) {
+                    this.aiTurn();
+                } else {
+                    this.startPlayerTurn();
+                }
+            }, 2000);
+        }, 500);
     }
 
     async playCard(playerIdx, cardId, cardData = null) {

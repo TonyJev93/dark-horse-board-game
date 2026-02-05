@@ -51,6 +51,19 @@ export class UIManager {
         this.eventBus.on('game:startMessage', ({ message }) => {
             this.showGameStartMessage(message);
         });
+
+        this.eventBus.on('state:gamePhase', ({ newValue }) => {
+            console.log('state:gamePhase event received:', newValue);
+            if (newValue === 'betting') {
+                this.showBettingSelection();
+            } else if (newValue === 'playing') {
+                this.hideBettingSelection();
+            }
+        });
+
+        this.eventBus.on('state:playerBettingSelection', () => {
+            this.updateBettingSelectionUI();
+        });
     }
 
     setupKeyboardShortcuts() {
@@ -63,6 +76,21 @@ export class UIManager {
                     if (restartBtn) {
                         e.preventDefault();
                         restartBtn.click();
+                    }
+                }
+                return;
+            }
+
+            if (this.gameState.gamePhase === 'betting') {
+                if (key >= '1' && key <= '7') {
+                    const horseId = parseInt(key);
+                    this.gameState.toggleBettingSelection(horseId);
+                    e.preventDefault();
+                } else if (key === 'Enter' || key === ' ') {
+                    const confirmBtn = document.getElementById('confirm-betting-btn');
+                    if (confirmBtn && !confirmBtn.disabled) {
+                        e.preventDefault();
+                        confirmBtn.click();
                     }
                 }
                 return;
@@ -446,5 +474,100 @@ export class UIManager {
             this.isGameStartShowing = false;
             this.renderTokenModal();
         }, 2000);
+    }
+
+    showBettingSelection() {
+        console.log('UIManager.showBettingSelection() called');
+        const screen = document.getElementById('betting-selection-screen');
+        const grid = document.getElementById('horse-selection-grid');
+        
+        console.log('Elements:', { screen, grid });
+        
+        if (!screen || !grid) {
+            console.error('Betting selection elements not found:', { screen, grid });
+            return;
+        }
+        
+        grid.innerHTML = '';
+        
+        this.gameState.horseIds.forEach((id) => {
+            const horseColor = HORSE_COLORS[id].toString(16).padStart(6, '0');
+            const card = document.createElement('div');
+            card.className = 'horse-selection-card cursor-pointer transform transition-all duration-300 hover:scale-110';
+            card.setAttribute('data-horse-id', id);
+            card.innerHTML = `
+                <div class="w-32 h-40 rounded-2xl border-4 border-white/30 flex flex-col items-center justify-center relative bg-gradient-to-br from-black/60 to-black/80 backdrop-blur-sm hover:border-blue-400">
+                    <div class="absolute top-2 left-2 w-6 h-6 bg-gray-800 text-white text-xs font-bold rounded-full flex items-center justify-center border border-white/30">
+                        ${id}
+                    </div>
+                    <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500 border-2 border-white hidden check-mark">
+                        <span class="text-white text-xs font-black flex items-center justify-center h-full">✓</span>
+                    </div>
+                    <div class="w-16 h-16 rounded-xl mb-3" style="background-color: #${horseColor}"></div>
+                    <div class="text-white text-3xl font-black">${id}번</div>
+                    <div class="text-white/60 text-xs font-bold">말</div>
+                </div>
+            `;
+            
+            card.onclick = () => {
+                this.gameState.toggleBettingSelection(id);
+            };
+            
+            grid.appendChild(card);
+        });
+        
+        const confirmBtn = document.getElementById('confirm-betting-btn');
+        confirmBtn.onclick = () => {
+            console.log('Confirm button clicked');
+            if (this.gameState.confirmBettingSelection()) {
+                console.log('Betting confirmed, emitting event');
+                this.eventBus.emit('betting:confirmed', {
+                    selection: this.gameState.bettings[0]
+                });
+            } else {
+                console.log('Betting confirmation failed - not enough selections');
+            }
+        };
+        
+        screen.classList.remove('hidden');
+        screen.style.display = 'flex';
+        console.log('Screen should now be visible');
+        this.updateBettingSelectionUI();
+    }
+
+    hideBettingSelection() {
+        console.log('UIManager.hideBettingSelection() called');
+        const screen = document.getElementById('betting-selection-screen');
+        if (screen) {
+            screen.classList.add('hidden');
+            screen.style.display = 'none';
+            console.log('Betting selection screen hidden');
+        }
+    }
+
+    updateBettingSelectionUI() {
+        const selection = this.gameState.playerBettingSelection;
+        const countNumber = document.getElementById('selection-count-number');
+        const confirmBtn = document.getElementById('confirm-betting-btn');
+        
+        countNumber.innerText = selection.length;
+        
+        confirmBtn.disabled = selection.length !== 2;
+        
+        document.querySelectorAll('.horse-selection-card').forEach((card) => {
+            const horseId = parseInt(card.getAttribute('data-horse-id'));
+            const checkMark = card.querySelector('.check-mark');
+            const cardInner = card.querySelector('div');
+            
+            if (selection.includes(horseId)) {
+                checkMark.classList.remove('hidden');
+                cardInner.classList.add('border-blue-500', 'bg-blue-500/20');
+                cardInner.classList.remove('border-white/30');
+            } else {
+                checkMark.classList.add('hidden');
+                cardInner.classList.remove('border-blue-500', 'bg-blue-500/20');
+                cardInner.classList.add('border-white/30');
+            }
+        });
     }
 }

@@ -172,6 +172,36 @@
                 <div id="rankings" class="space-y-2"></div>
             </div>
 
+            <!-- Betting Selection Screen -->
+            <div id="betting-selection-screen" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-50 pointer-events-auto">
+                <div class="text-center">
+                    <h1 class="text-6xl font-black text-white mb-4 italic tracking-tight">
+                        베팅할 말 선택
+                    </h1>
+                    <p class="text-blue-400 font-bold mb-4 text-xl">
+                        승리할 것 같은 말 2마리를 선택하세요
+                    </p>
+                    <p class="text-white/60 text-sm mb-8">
+                        단축키: 1-7 (말 선택) | Enter/Space (선택 완료)
+                    </p>
+                    <div id="horse-selection-grid" class="flex gap-6 justify-center mb-10 flex-wrap max-w-4xl">
+                        <!-- 말 선택 카드들이 동적으로 생성됩니다 -->
+                    </div>
+                    <div class="mb-8">
+                        <span id="selection-count" class="text-white text-2xl font-bold">
+                            선택됨: <span id="selection-count-number" class="text-blue-400">0</span>/2
+                        </span>
+                    </div>
+                    <button
+                        id="confirm-betting-btn"
+                        class="bg-red-600 text-white font-black px-16 py-5 rounded-full hover:bg-red-500 transition-all transform hover:scale-110 shadow-2xl text-xl disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+                        disabled
+                    >
+                        선택 완료
+                    </button>
+                </div>
+            </div>
+
             <!-- Result Screen -->
             <div id="result-screen">
                 <h1 class="text-6xl font-black text-white mb-2 italic tracking-tighter">

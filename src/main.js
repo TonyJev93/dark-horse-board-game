@@ -20,16 +20,11 @@ class DarkHorseGame {
         this.gameEngine = new GameEngine(this.gameState, this.sceneManager, this.uiManager);
         this.uiManager.gameEngine = this.gameEngine;
 
-        this.gameEngine.init();
-
-        this.createHorses();
         this.setupEventListeners();
-
-        this.gameEngine.startPlayerTurn();
-        this.uiManager.render();
-
         this.startAnimationLoop();
         this.setupWindowResize();
+
+        this.gameEngine.init();
     }
 
     createHorses() {
@@ -66,6 +61,11 @@ class DarkHorseGame {
         if (restartBtn) {
             restartBtn.onclick = () => location.reload();
         }
+
+        this.gameState.eventBus.on('game:initialized', () => {
+            this.createHorses();
+            this.uiManager.render();
+        });
 
         this.gameState.eventBus.on('game:tokenTaken', ({ isPlayer }) => {
             if (isPlayer) {

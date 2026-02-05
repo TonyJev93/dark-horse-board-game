@@ -52,3 +52,40 @@
 #token-modal {
     /* Styles managed inline in HTML */
 }
+
+/* Betting selection screen */
+#betting-selection-screen {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.horse-selection-card {
+    animation: slideUp 0.5s ease-out backwards;
+}
+
+.horse-selection-card:nth-child(1) { animation-delay: 0.1s; }
+.horse-selection-card:nth-child(2) { animation-delay: 0.15s; }
+.horse-selection-card:nth-child(3) { animation-delay: 0.2s; }
+.horse-selection-card:nth-child(4) { animation-delay: 0.25s; }
+.horse-selection-card:nth-child(5) { animation-delay: 0.3s; }
+.horse-selection-card:nth-child(6) { animation-delay: 0.35s; }
+.horse-selection-card:nth-child(7) { animation-delay: 0.4s; }
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

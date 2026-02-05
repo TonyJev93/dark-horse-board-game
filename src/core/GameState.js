@@ -35,6 +35,8 @@ export class GameState {
             isGameOver: false,
             rankPoints: RANK_POINTS,
             turnPhase: 'token',
+            gamePhase: 'betting', // 'betting' -> 'playing'
+            playerBettingSelection: [], // 플레이어가 선택한 베팅 말
         };
     }
 
@@ -109,6 +111,20 @@ export class GameState {
     }
     set turnPhase(value) {
         this._setState({ turnPhase: value });
+    }
+
+    get gamePhase() {
+        return this._state.gamePhase;
+    }
+    set gamePhase(value) {
+        this._setState({ gamePhase: value });
+    }
+
+    get playerBettingSelection() {
+        return this._state.playerBettingSelection;
+    }
+    set playerBettingSelection(value) {
+        this._setState({ playerBettingSelection: value });
     }
 
     _setState(updates) {
@@ -189,6 +205,44 @@ export class GameState {
             horseOrder: [...this._state.horseOrder],
             horseIds: [...this._state.horseIds],
             rankPoints: [...this._state.rankPoints],
+            playerBettingSelection: [...this._state.playerBettingSelection],
         };
+    }
+
+    toggleBettingSelection(horseId) {
+        const current = [...this._state.playerBettingSelection];
+        const index = current.indexOf(horseId);
+        
+        if (index !== -1) {
+            current.splice(index, 1);
+        } else {
+            if (current.length >= 2) {
+                current.shift();
+            }
+            current.push(horseId);
+        }
+        
+        this._setState({ playerBettingSelection: current });
+        return current;
+    }
+
+    clearBettingSelection() {
+        this._setState({ playerBettingSelection: [] });
+    }
+
+    confirmBettingSelection() {
+        console.log('GameState.confirmBettingSelection() - selection:', this._state.playerBettingSelection);
+        if (this._state.playerBettingSelection.length === 2) {
+            const newBettings = [...this._state.bettings];
+            newBettings[0] = [...this._state.playerBettingSelection];
+            console.log('Setting gamePhase to playing...');
+            this._setState({ 
+                bettings: newBettings,
+                gamePhase: 'playing'
+            });
+            console.log('GamePhase changed to:', this._state.gamePhase);
+            return true;
+        }
+        return false;
     }
 }
