@@ -325,8 +325,6 @@ export class GameEngine {
     }
 
     performExchangeBetting(playerIdx, targetPlayerIdx, playerCardIdx, targetCardIdx) {
-        this.gameState.isAnimating = true;
-        
         const result = this.gameState.exchangeBettingCard(playerIdx, targetPlayerIdx, playerCardIdx, targetCardIdx);
         
         if (result) {
@@ -340,22 +338,27 @@ export class GameEngine {
                 isPlayer: playerIdx === 0,
             });
             
+            const delay = playerIdx === 0 ? 2000 : 1500;
             setTimeout(() => {
                 this.gameState.isAnimating = false;
                 this.nextTurn();
-            }, 2000);
+            }, delay);
         } else {
             this.gameState.isAnimating = false;
         }
     }
 
     aiExchangeBetting(playerIdx) {
-        const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i)
-            .filter(i => i !== playerIdx);
-        const targetPlayer = opponents[Math.floor(Math.random() * opponents.length)];
-        const playerCardIdx = Math.floor(Math.random() * 2);
-        const targetCardIdx = Math.floor(Math.random() * 2);
+        this.gameState.isAnimating = true;
         
-        this.performExchangeBetting(playerIdx, targetPlayer, playerCardIdx, targetCardIdx);
+        setTimeout(() => {
+            const opponents = Array.from({ length: this.gameState.playerCount }, (_, i) => i)
+                .filter(i => i !== playerIdx);
+            const targetPlayer = opponents[Math.floor(Math.random() * opponents.length)];
+            const playerCardIdx = Math.floor(Math.random() * 2);
+            const targetCardIdx = Math.floor(Math.random() * 2);
+            
+            this.performExchangeBetting(playerIdx, targetPlayer, playerCardIdx, targetCardIdx);
+        }, 1000);
     }
 }
