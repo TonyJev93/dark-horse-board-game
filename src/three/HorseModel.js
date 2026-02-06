@@ -1,11 +1,16 @@
-import { HORSE_COLORS } from '../core/GameConfig.js';
+import {
+    HORSE_COLORS,
+    ARROW_COLOR_BLACK,
+    ARROW_COLOR_RED,
+    BODY_COLOR_BLACK,
+} from '../core/GameConfig.js';
 
 export class HorseModel {
     static createHorse(id, isMyHorse, isDarkHorse, hasToken) {
         const group = new THREE.Group();
-        const color = isDarkHorse ? 0x000000 : HORSE_COLORS[id];
+        const color = isDarkHorse ? ARROW_COLOR_BLACK : HORSE_COLORS[id];
         const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 });
-        const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: BODY_COLOR_BLACK });
 
         const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 2.5), mat);
         body.position.y = 1.5;
@@ -80,21 +85,21 @@ export class HorseModel {
             const arrowGroup = new THREE.Group();
             let arrowColor;
             let isTransparent = false;
-            
+
             if (hasToken) {
-                arrowColor = 0x000000;
+                arrowColor = ARROW_COLOR_BLACK;
             } else if (isMyHorse) {
-                arrowColor = 0xff0000;
+                arrowColor = ARROW_COLOR_RED;
             } else {
-                arrowColor = 0x000000;
+                arrowColor = ARROW_COLOR_BLACK;
                 isTransparent = true;
             }
-            
+
             const arrowMat = new THREE.MeshBasicMaterial({
                 color: arrowColor,
                 side: THREE.DoubleSide,
                 transparent: isTransparent,
-                opacity: isTransparent ? 0.3 : 1.0
+                opacity: isTransparent ? 0.3 : 1.0,
             });
             const arrowGeo = new THREE.ConeGeometry(0.5, 1.0, 3);
             const arrow = new THREE.Mesh(arrowGeo, arrowMat);

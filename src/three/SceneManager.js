@@ -1,3 +1,14 @@
+import {
+    ARROW_COLOR_BLACK,
+    ARROW_COLOR_RED,
+    SCENE_BACKGROUND_COLOR,
+    SCENE_AMBIENT_LIGHT_COLOR,
+    SCENE_SUN_LIGHT_COLOR,
+    MEADOW_COLOR,
+    TRACK_COLOR,
+    LINE_COLOR,
+} from '../core/GameConfig.js';
+
 /**
  * Manages Three.js 3D scene, camera, and rendering
  * Handles horse animations and scene updates
@@ -22,8 +33,8 @@ export class SceneManager {
      */
     init() {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x507d2a);
-        this.scene.fog = new THREE.Fog(0x507d2a, 30, 150);
+        this.scene.background = new THREE.Color(SCENE_BACKGROUND_COLOR);
+        this.scene.fog = new THREE.Fog(SCENE_BACKGROUND_COLOR, 30, 150);
 
         this.camera = new THREE.PerspectiveCamera(
             45,
@@ -46,8 +57,8 @@ export class SceneManager {
     }
 
     setupLights() {
-        this.scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+        this.scene.add(new THREE.AmbientLight(SCENE_AMBIENT_LIGHT_COLOR, 0.8));
+        const sunLight = new THREE.DirectionalLight(SCENE_SUN_LIGHT_COLOR, 1.2);
         sunLight.position.set(20, 50, 20);
         sunLight.castShadow = true;
         sunLight.shadow.camera.left = -60;
@@ -59,7 +70,7 @@ export class SceneManager {
 
     createTrack() {
         const meadowGeo = new THREE.PlaneGeometry(1000, 1000);
-        const meadowMat = new THREE.MeshStandardMaterial({ color: 0x416e23 });
+        const meadowMat = new THREE.MeshStandardMaterial({ color: MEADOW_COLOR });
         const meadow = new THREE.Mesh(meadowGeo, meadowMat);
         meadow.rotation.x = -Math.PI / 2;
         meadow.receiveShadow = true;
@@ -68,7 +79,7 @@ export class SceneManager {
         const trackWidth = 40;
         const trackLength = 200;
         const trackGeo = new THREE.PlaneGeometry(trackWidth, trackLength);
-        const trackMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 });
+        const trackMat = new THREE.MeshStandardMaterial({ color: TRACK_COLOR, roughness: 0.9 });
         const track = new THREE.Mesh(trackGeo, trackMat);
         track.rotation.x = -Math.PI / 2;
         track.position.y = 0.02;
@@ -79,7 +90,7 @@ export class SceneManager {
         const laneWidth = trackWidth / laneCount;
         for (let i = 0; i <= laneCount; i++) {
             const lineGeo = new THREE.PlaneGeometry(0.2, trackLength);
-            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const lineMat = new THREE.MeshBasicMaterial({ color: LINE_COLOR });
             const line = new THREE.Mesh(lineGeo, lineMat);
             line.rotation.x = -Math.PI / 2;
             line.position.set(-trackWidth / 2 + i * laneWidth, 0.03, 0);
@@ -226,7 +237,7 @@ export class SceneManager {
             if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
                 const arrowMesh = child.userData.arrowMesh;
                 if (arrowMesh.material) {
-                    arrowMesh.material.color.setHex(0x000000);
+                    arrowMesh.material.color.setHex(ARROW_COLOR_BLACK);
                     arrowMesh.material.transparent = false;
                     arrowMesh.material.opacity = 1.0;
                 }
@@ -236,26 +247,26 @@ export class SceneManager {
 
     updateBettingArrows(bettings, hasToken, darkHorseId) {
         const myBettings = bettings[0];
-        
+
         Object.values(this.horses).forEach((horse) => {
             const horseId = horse.userData.id;
             const isMyHorse = myBettings.includes(horseId);
             const isDarkHorse = horseId === darkHorseId;
-            
+
             horse.children.forEach((child) => {
                 if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
                     const arrowMesh = child.userData.arrowMesh;
                     if (arrowMesh.material) {
                         if (hasToken && isMyHorse) {
-                            arrowMesh.material.color.setHex(0x000000);
+                            arrowMesh.material.color.setHex(ARROW_COLOR_BLACK);
                             arrowMesh.material.transparent = false;
                             arrowMesh.material.opacity = 1.0;
                         } else if (isMyHorse) {
-                            arrowMesh.material.color.setHex(0xff0000);
+                            arrowMesh.material.color.setHex(ARROW_COLOR_RED);
                             arrowMesh.material.transparent = false;
                             arrowMesh.material.opacity = 1.0;
                         } else if (isDarkHorse) {
-                            arrowMesh.material.color.setHex(0x000000);
+                            arrowMesh.material.color.setHex(ARROW_COLOR_BLACK);
                             arrowMesh.material.transparent = true;
                             arrowMesh.material.opacity = 0.3;
                         }
