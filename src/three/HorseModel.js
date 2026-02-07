@@ -81,35 +81,42 @@ export class HorseModel {
         sprite.scale.set(1.5, 1.5, 1);
         group.add(sprite);
 
-        if (isMyHorse || isDarkHorse) {
-            const arrowGroup = new THREE.Group();
-            let arrowColor;
-            let isTransparent = false;
+        const arrowGroup = new THREE.Group();
+        let arrowColor;
+        let isTransparent = false;
+        let arrowVisible = false;
 
-            if (hasToken) {
-                arrowColor = ARROW_COLOR_BLACK;
-            } else if (isMyHorse) {
-                arrowColor = ARROW_COLOR_RED;
-            } else {
-                arrowColor = ARROW_COLOR_BLACK;
-                isTransparent = true;
-            }
-
-            const arrowMat = new THREE.MeshBasicMaterial({
-                color: arrowColor,
-                side: THREE.DoubleSide,
-                transparent: isTransparent,
-                opacity: isTransparent ? 0.3 : 1.0,
-            });
-            const arrowGeo = new THREE.ConeGeometry(0.5, 1.0, 3);
-            const arrow = new THREE.Mesh(arrowGeo, arrowMat);
-            arrow.rotation.x = Math.PI;
-            arrow.position.y = 0;
-            arrowGroup.add(arrow);
-            arrowGroup.position.set(0, 5.8, 0);
-            arrowGroup.userData = { isArrowIndicator: true, arrowMesh: arrow, isDarkHorse };
-            group.add(arrowGroup);
+        if (hasToken) {
+            arrowColor = ARROW_COLOR_BLACK;
+            arrowVisible = true;
+        } else if (isMyHorse) {
+            arrowColor = ARROW_COLOR_RED;
+            arrowVisible = true;
+        } else if (isDarkHorse) {
+            arrowColor = ARROW_COLOR_BLACK;
+            isTransparent = true;
+            arrowVisible = true;
+        } else {
+            arrowColor = ARROW_COLOR_BLACK;
+            isTransparent = true;
+            arrowVisible = false;
         }
+
+        const arrowMat = new THREE.MeshBasicMaterial({
+            color: arrowColor,
+            side: THREE.DoubleSide,
+            transparent: isTransparent,
+            opacity: isTransparent ? 0.3 : 1.0,
+        });
+        const arrowGeo = new THREE.ConeGeometry(0.5, 1.0, 3);
+        const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+        arrow.rotation.x = Math.PI;
+        arrow.position.y = 0;
+        arrowGroup.add(arrow);
+        arrowGroup.position.set(0, 5.8, 0);
+        arrowGroup.visible = arrowVisible;
+        arrowGroup.userData = { isArrowIndicator: true, arrowMesh: arrow };
+        group.add(arrowGroup);
 
         group.userData = { legs, id, isMyHorse };
         return group;

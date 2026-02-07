@@ -1,12 +1,12 @@
 import {
     ARROW_COLOR_BLACK,
     ARROW_COLOR_RED,
-    SCENE_BACKGROUND_COLOR,
-    SCENE_AMBIENT_LIGHT_COLOR,
-    SCENE_SUN_LIGHT_COLOR,
-    MEADOW_COLOR,
-    TRACK_COLOR,
     LINE_COLOR,
+    MEADOW_COLOR,
+    SCENE_AMBIENT_LIGHT_COLOR,
+    SCENE_BACKGROUND_COLOR,
+    SCENE_SUN_LIGHT_COLOR,
+    TRACK_COLOR,
 } from '../core/GameConfig.js';
 
 /**
@@ -255,21 +255,31 @@ export class SceneManager {
 
             horse.children.forEach((child) => {
                 if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
+                    const arrowGroup = child;
                     const arrowMesh = child.userData.arrowMesh;
                     if (arrowMesh.material) {
+                        let shouldShow = false;
+                        let arrowColor = ARROW_COLOR_BLACK;
+                        let isTransparent = true;
+
                         if (hasToken && isMyHorse) {
-                            arrowMesh.material.color.setHex(ARROW_COLOR_BLACK);
-                            arrowMesh.material.transparent = false;
-                            arrowMesh.material.opacity = 1.0;
+                            shouldShow = true;
+                            arrowColor = ARROW_COLOR_BLACK;
+                            isTransparent = false;
                         } else if (isMyHorse) {
-                            arrowMesh.material.color.setHex(ARROW_COLOR_RED);
-                            arrowMesh.material.transparent = false;
-                            arrowMesh.material.opacity = 1.0;
+                            shouldShow = true;
+                            arrowColor = ARROW_COLOR_RED;
+                            isTransparent = false;
                         } else if (isDarkHorse) {
-                            arrowMesh.material.color.setHex(ARROW_COLOR_BLACK);
-                            arrowMesh.material.transparent = true;
-                            arrowMesh.material.opacity = 0.3;
+                            shouldShow = true;
+                            arrowColor = ARROW_COLOR_BLACK;
+                            isTransparent = true;
                         }
+
+                        arrowGroup.visible = shouldShow;
+                        arrowMesh.material.color.setHex(arrowColor);
+                        arrowMesh.material.transparent = isTransparent;
+                        arrowMesh.material.opacity = isTransparent ? 0.3 : 1.0;
                     }
                 }
             });
