@@ -253,6 +253,7 @@ export class SceneManager {
             const isMyHorse = myBettings.includes(horseId);
             const isDarkHorse = horseId === darkHorseId;
 
+
             horse.children.forEach((child) => {
                 if (child.userData.isArrowIndicator && child.userData.arrowMesh) {
                     const arrowGroup = child;
