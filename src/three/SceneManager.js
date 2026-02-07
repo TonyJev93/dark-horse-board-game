@@ -262,7 +262,7 @@ export class SceneManager {
                         let arrowColor = ARROW_COLOR_BLACK;
                         let isTransparent = true;
 
-                        if (hasToken && isMyHorse) {
+                        if (hasToken && isDarkHorse) {
                             shouldShow = true;
                             arrowColor = ARROW_COLOR_BLACK;
                             isTransparent = false;
